@@ -5,11 +5,12 @@ A little memory game to help learn big ideas.
 2. Click the words in the proper order.
 3. Game provides feedback about Win, Loss, Player Error.
 4. Need a hint? (All are toggles)
-   * _ShowIt_. Show the full quote.
-   * _SayIt_. Audio of the quote. [Only works in Chrome.]
-   * _BoldIt_. The next correct word will be bolded.
-5. Mistake? Click the last node to undo.
-6. Select another quote (top-right) or _Restart_ game (bottom-right).
+   * _Show It_. Show the full quote.
+   * _Say It_. Audio of the quote. [Works in Chrome/Safari.]
+   * _Bold It_. The next correct word will be bolded.
+   * _Punctiate It_. Turns on capitalization and punctuation.
+5. Mistake? Incorrect answers are red. Click a circle to undo.
+6. Select a new quote (top-right) or _Restart_ game (bottom-right).
 
 
 ## D3 Force Simulation Notes
@@ -22,12 +23,6 @@ A little memory game to help learn big ideas.
 
   
 ## TODO
-### D3
 * Multiple choice or Pairings game option
-
-### Mechanics
-* Better scoring?
-
-### Ideas
 * Start with the text filled in, certain words missing, you'd drag those in.
 * Add other words to throw you off

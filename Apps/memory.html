@@ -178,7 +178,6 @@
                         x: 0,       
                         y: ~~(Math.random() * svgHeight),
                         rad: radScale(quoteSplit[i].length),    // the radius
-                        show: (i < initCount ? 1 : 0),          // is this node showing
                         clickOrder: 0,  // what order was it clicked on by user?
                         focus: (i < initCount ? 0 : -1),    // is is part of the answer set; controls focii
                         color: colors(i)
@@ -205,7 +204,7 @@
 
             // Create g-elements (for nodes) based on a subset of wordData
             var gnodes = svg.selectAll("g")
-                .data(words("show", 1), function id(d, i) { return d.id; })
+                .data(words("showing", -1), function id(d, i) { return d.id; })
                 .enter().append("g").attr("class", function (d) { return "gnode g" + d.id; })
                 .classed("next", function (d) { return (boldIt && d.id == 0) ? true : false ; });
 
@@ -220,7 +219,7 @@
             var actions = gnodes.on("click", nodeClicked);
 
             // Link data to simulation and set it in motion.
-            simulation.nodes(words("show", 1)).force("link").links(wordLinks);
+            simulation.nodes(words("showing", -1)).force("link").links(wordLinks);
             simulation.on("tick", ticked).alpha(0.5).restart();
         }
 
@@ -252,24 +251,24 @@
         function nodeClicked(d) {
             if (d.focus == 0) { // A node from the unused side
                 d.focus = 1; // Move gnode to other focii.
-                var answerLength = words("focus", 1).length; // answerLength includes just-clicked node
-                var showLength = words("show", 1).length;
-                d.clickOrder = answerLength; // Set clickOrder
-                if (wordData.length > showLength && words("focus", 0).length < initCount) { wordData[showLength].show = 1; wordData[showLength].focus = 0; } // Show another node
-                if (answerLength > 1) { wordLinks.push({ "source": words("clickOrder", d.clickOrder - 1)[0].id, "target": d.id }); } // Add link
+                var answerCount = words("focus", 1).length; // answerCount includes just-clicked node; equals clickOrder
+                var showCount = words("showing", -1).length; // 
+                d.clickOrder = answerCount; // Set clickOrder
+                if (wordData.length > showCount && words("focus", 0).length < initCount) { wordData[showCount].focus = 0; } // Show another node
+                if (answerCount > 1) { wordLinks.push({ "source": words("clickOrder", d.clickOrder - 1)[0].id, "target": d.id }); } // Add link
                 start();
 
-                svg.selectAll(".text").classed("next", function (d) { return (boldIt && d.index == answerLength) ? true : false; });  // Bold next word
+                svg.selectAll(".text").classed("next", function (d) { return (boldIt && d.index == answerCount) ? true : false; });  // Bold next word
 
                 // Check accuracy
                 var accurate = true;
-                for (i = 0; i < answerLength; i++) {  // cycle thru wordData by clickOrder (base 1); compare with wordData (correct answers)
+                for (i = 0; i < answerCount; i++) {  // cycle thru wordData by clickOrder (base 1); compare with wordData (correct answers)
                     if (words("clickOrder", i + 1)[0].word != wordData[i].word) {
                         accurate = false;
                         $('.c' + words("clickOrder", i + 1)[0].id).css("fill", "red");
                     }
                 }
-                if (accurate && wordData.length == answerLength) { gameManager("win"); }
+                if (accurate && timerLength >= 0 && wordData.length == answerCount) { gameManager("win"); }
 
             } else {   // d.focus == 1 (a node from the focus) 
                 d.focus = 0;
@@ -283,8 +282,8 @@
         // Return portion of wordData needed.
         function words(key, val) {
             switch (key) {
-                case "show": // returns an array of the shown nodes [val = 1] or unshown [val = 0]
-                    return wordData.filter(function (value, index) { return value.show == val ? true : false; });
+                case "showing": // returns an array of the shown [focus > -1]
+                    return wordData.filter(function (value, index) { return value.focus > -1 ? true : false; });
                     break;
                 case "focus": // returns an array of the focus nodes [val = 1] or un-focus [val = 0]
                     return wordData.filter(function (value, index) { return value.focus == val ? true : false; });
@@ -322,7 +321,7 @@
                     $('#message').html("<b>Memorizinator</b>. Click the words in the correct order.");
                     break;
                 case "win":
-                    $('#message').html("<b>You won!</b> Score = " + timerLength + 1);
+                    $('#message').html("<b>You won!</b> Score = " + timerLength);
                     $("#timerBar").attr("width", 0);
                     clearInterval(timer);
                     break;
@@ -337,7 +336,7 @@
                     build();
                     break;
                 case "sayIt":
-                    $('#setsMessage').text("'Say It' only works in Chrome browser. Click again to silence.");
+                    $('#setsMessage').text("'Say It' only works in Chrome/Safari. Click again to silence.");
                     if (window.speechSynthesis.speaking) {
                         window.speechSynthesis.cancel();
                     } else {
@@ -363,7 +362,7 @@
 
 
         function gameTimer() {
-            if (timerLength-- >= 0) {
+            if (--timerLength >= 0) {
                 gameManager("timerBar");
             } else {
                 gameManager("loss")
