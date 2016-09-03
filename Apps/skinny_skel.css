@@ -149,6 +149,7 @@ p {
   background-color: white;
   z-index: 1002;
   overflow: auto;
+  outline: none;
   box-shadow: -10px 0 0 100em rgba(209, 200, 208, .6);
 }
 

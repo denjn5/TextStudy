@@ -1,0 +1,33 @@
+## Memorizinator Game
+A little memory game to help learn big ideas.
+
+1. Game timer starts automatically (1.5 seconds / word).
+2. Click the words in the proper order.
+3. Game provides feedback about Win, Loss, Player Error.
+4. Need a hint? (All are toggles)
+   * _ShowIt_. Show the full quote.
+   * _SayIt_. Audio of the quote. [Only works in Chrome.]
+   * _BoldIt_. The next correct word will be bolded.
+5. Mistake? Click the last node to undo.
+6. Select another quote (top-right) or _Restart_ game (bottom-right).
+
+
+## D3 Force Simulation Notes
+* This game leverages the D3 Force Simulation (version 4) mechanics.  It incorporates:
+  * Multi-foci
+  * Adds nodes
+  * Adds links and removes links on the fly
+  * Event handling
+  * Text centered in nodes (overcomes Firefox vertical-align problem)
+
+  
+## TODO
+### D3
+* Multiple choice or Pairings game option
+
+### Mechanics
+* Better scoring?
+
+### Ideas
+* Start with the text filled in, certain words missing, you'd drag those in.
+* Add other words to throw you off

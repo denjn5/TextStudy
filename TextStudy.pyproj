@@ -25,17 +25,18 @@
     <Compile Include="TextStudy.py" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="colors.js" />
+    <Content Include="Apps\colors.js" />
     <Content Include="index.html" />
-    <Content Include="memory.html" />
-    <Content Include="memory_readme.md" />
-    <Content Include="quotes.json" />
+    <Content Include="Apps\memory.html" />
+    <Content Include="Apps\memory_readme.md" />
+    <Content Include="Apps\quotes.json" />
     <Content Include="README.md" />
-    <Content Include="skinny_skel.css" />
-    <Content Include="typeit.html" />
+    <Content Include="Apps\skinny_skel.css" />
+    <Content Include="Apps\typeit.html" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="External\" />
+    <Folder Include="Apps\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

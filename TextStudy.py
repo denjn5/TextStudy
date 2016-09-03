@@ -10,7 +10,7 @@ import os
 @web.route('/')
 @web.route('/<filename>')
 def index(filename):
-    res_path = os.path.dirname(os.path.realpath(__file__))
+    res_path = os.path.dirname(os.path.realpath(__file__)) + r'\Apps'
     print('res_path: ' + res_path)
     return web.static_file(filename, root=res_path)
 
