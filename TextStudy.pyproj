@@ -24,6 +24,19 @@
   <ItemGroup>
     <Compile Include="TextStudy.py" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="colors.js" />
+    <Content Include="index.html" />
+    <Content Include="memory.html" />
+    <Content Include="memory_readme.md" />
+    <Content Include="quotes.json" />
+    <Content Include="README.md" />
+    <Content Include="skinny_skel.css" />
+    <Content Include="typeit.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="External\" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>

@@ -1,0 +1,371 @@
+﻿<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Memorizinator</title>
+<link rel="stylesheet" href="skinny_skel.css" type="text/css" media="screen" />
+<style>
+    #container {
+        position: relative;
+        display: inline-block;
+    }
+
+    #gameboard {
+        border: 1px solid #840000;
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .gnode > circle:hover {
+        stroke: #e0e0e2;
+        stroke-width: 2px;
+    }
+
+    .text { /* centers text in node */
+        text-anchor: middle;
+        alignment-baseline: central;
+        pointer-events: none;
+        transform: translateY(1%); /* Firefox */
+    }
+
+    .next { /* for boldIt hint */
+        font-weight: bold;
+    }
+
+    .link {
+        stroke: lightgray;
+        stroke-width: 1px;
+    }
+
+    #selectQuote {
+        position: absolute;
+        top: 3px;
+        right: 2px;
+    }
+
+    #message {
+        position: absolute;
+        bottom: 2px;
+        left: 3px;
+    }
+
+    #restart {
+        bottom: 2px;
+        right: 4px;
+    }
+
+    #settings {
+        bottom: 2px;
+        right: 28px;
+    }
+
+    #setsPop {
+        left: 15%;
+        top: 20%;
+        width: 66%;
+        height: 40%;
+    }
+
+    #timerBar {
+        fill: #840000;
+        opacity: 0.7;
+    }
+
+    #timerBarBox {
+        fill: #e0e0e2;
+    }
+</style>
+<body>
+    <div id="container">
+        <svg id="gameboard">
+            <rect width="0" height="10" x="3" y="3" id="timerBarBox"></rect>
+            <rect width="0" height="10" x="3" y="3" id="timerBar"></rect>
+        </svg>
+
+        <select id="selectQuote"></select>
+        <div id="message"><b>Memorizinator</b> (A little game to help you learn big ideas.)</div>
+
+        <svg id="settings" class="iconButton" viewBox="0 0 20 20" xml:space="preserve"><path d="M5,1.6C5,1.047,4.552,1,4,1C3.447,1,3,1.047,3,1.6V10h2V1.6z M3,18.4C3,18.951,3.447,19,4,19c0.552,0,1-0.049,1-0.6V15H3 V18.4z M6.399,11H1.599C1.046,11,1,11.448,1,12v1c0,0.553,0.046,1,0.599,1h4.801C6.95,14,7,13.553,7,13v-1 C7,11.448,6.95,11,6.399,11z M18.399,12h-4.801C13.046,12,13,12.448,13,13v1c0,0.553,0.046,1,0.599,1h4.801 C18.95,15,19,14.553,19,14v-1C19,12.448,18.95,12,18.399,12z M13,7c0-0.552-0.05-1-0.601-1H7.599C7.046,6,7,6.448,7,7v1 c0,0.553,0.046,1,0.599,1h4.801C12.95,9,13,8.553,13,8V7z M11,1.6C11,1.047,10.552,1,10,1C9.447,1,9,1.047,9,1.6V5h2V1.6z M9,18.4 c0,0.551,0.447,0.6,1,0.6c0.552,0,1-0.049,1-0.6V10H9V18.4z M17,1.6C17,1.047,16.552,1,16,1c-0.553,0-1,0.047-1,0.6V11h2V1.6z M15,18.4c0,0.551,0.447,0.6,1,0.6c0.552,0,1-0.049,1-0.6V16h-2V18.4z"><title>Show Settings</title></path></svg>
+        <svg id="restart" class="iconButton" viewBox="0 0 20 20" xml:space="preserve"><path d="M5.516,14.224c-2.262-2.432-2.222-6.244,0.128-8.611c0.962-0.969,2.164-1.547,3.414-1.736L8.989,1.8 C7.234,2.013,5.537,2.796,4.192,4.151c-3.149,3.17-3.187,8.289-0.123,11.531l-1.741,1.752l5.51,0.301l-0.015-5.834L5.516,14.224z M12.163,2.265l0.015,5.834l2.307-2.322c2.262,2.434,2.222,6.246-0.128,8.611c-0.961,0.969-2.164,1.547-3.414,1.736l0.069,2.076 c1.755-0.213,3.452-0.996,4.798-2.35c3.148-3.172,3.186-8.291,0.122-11.531l1.741-1.754L12.163,2.265z"><title>Restart game</title></path></svg>
+        <div id="setsPop" class="popup">
+            <div class="row">
+                <div class="eleven columns"><h5>Settings</h5></div>
+                <div class="one columns"><svg class="close iconButton" viewBox="0 0 20 20" xml:space="preserve"><path d="M14.348,14.849c-0.469,0.469-1.229,0.469-1.697,0L10,11.819l-2.651,3.029c-0.469,0.469-1.229,0.469-1.697,0 c-0.469-0.469-0.469-1.229,0-1.697l2.758-3.15L5.651,6.849c-0.469-0.469-0.469-1.228,0-1.697c0.469-0.469,1.228-0.469,1.697,0 L10,8.183l2.651-3.031c0.469-0.469,1.228-0.469,1.697,0c0.469,0.469,0.469,1.229,0,1.697l-2.758,3.152l2.758,3.15 C14.817,13.62,14.817,14.38,14.348,14.849z"><title>Close popup</title></path></svg></div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="button four columns" id="sayIt" title="Reads the quote to you. Click again to silence.">Say It</div>
+                <div class="button four columns" id="showIt" title="Show the quote. Click again to hide.">Show It</div>
+                <div class="button four columns" id="boldIt" title="Bold the next word you need to click. Click again to turn off.">Bold It</div>
+            </div>
+            <div class="row">
+                <div id="setsMessage" class="twelve columns"></div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="//d3js.org/d3.v4.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="colors.js"></script>
+<script>
+    $(function () {
+
+        // ********** EVENTS **********
+        $("#container").click(function () {
+            // TODO: This never lets the dialog open!
+            //if ($(".popup").is(':visible')) { $('.popup').hide(); }
+        });
+
+        $("#selectQuote").change(function () {
+            citation = $("#selectQuote").val();
+            gameManager('restart');
+        });
+
+        $("#settings").click(function () { $('#setsPop').show(); });
+        $("#restart").click(function () { gameManager('restart'); });
+
+        $("#sayIt").click(function () { gameManager('sayIt'); });
+        $("#showIt").click(function () { gameManager('showIt'); });
+        $("#boldIt").click(function () { gameManager('boldIt'); });
+        $(".close").click(function () { $('.popup:visible').hide(); });
+
+
+        // ********** D3 HAPPENS HERE **********
+        // General variablees
+        var wordData = [],   // All words (data) from text from json
+            wordLinks = [],     // Links (data) in the simulation
+            svgWidth = 700,     // Width of the svg palette
+            svgHeight = 400,    // Height of the svg palette
+            initCount = 7,      // Number of words to show at beginning of game
+            foci = [{ x: svgWidth * 0.25, y: svgHeight * 0.45 }, { x: svgWidth * 0.75, y: svgHeight * 0.45 }], // Sets 2 foci on page
+            citation = "Williams Shedd",
+            quote,               // The quote to be memorized
+            boldIt = false;     // Is the boltIt hint be active?
+
+        // Get svg handle, set up color and radius scale (use word length to set size)
+        $("#container").css("width", svgWidth).css("height", svgHeight); 
+        var svg = d3.select("#gameboard");
+        var radScale = d3.scaleLinear().domain([1, 15]).range([10, 50]);
+
+        // Set forces in the simulation
+        var simulation = d3.forceSimulation()
+            //.force("link", d3.forceLink().id(function (d) { return d.id; }))
+            .force("link", d3.forceLink().distance(20).strength(0.6))
+            .force("charge", d3.forceManyBody().strength(-50))
+            .force("collide", d3.forceCollide(function (d) { return d.rad; }));
+
+        // Get quote from json, then start simulation
+        function build() {
+            d3.json("quotes.json", function (error, quotesData) {
+
+                // Populate dropdown if it's empty
+                if ($('#selectQuote').children('option').length == 0) {
+                    $.each(quotesData.nodes, function (key, value) {
+                        option = "<option value='" + value.cit + "' " + (value.cit == citation ? "selected" : "") + ">" + value.cit + "</option>";
+                        $('#selectQuote').append(option);
+                    });
+                }
+
+                // Get the selected quote (filter returns an array, length = 1); then split.
+                quote = quotesData.nodes.filter(function (obj) { return (obj.cit == citation ? true : false); })[0].text;
+                var quoteSplit = quote.replace("-", "- ").split(" ");
+                var colors = d3.scaleOrdinal().domain(0, 4).range(colorPalette(quote.length)); // function in colors.js
+
+                // Format data, create answerkey
+                for (i = 0; i < quoteSplit.length; i++) {
+                    wordData.push({
+                        word: quoteSplit[i],    // the actual word
+                        id: i,          // the original index
+                        x: 0,       
+                        y: ~~(Math.random() * svgHeight),
+                        rad: radScale(quoteSplit[i].length),    // the radius
+                        show: (i < initCount ? 1 : 0),          // is this node showing
+                        clickOrder: 0,  // what order was it clicked on by user?
+                        answerSet: 0,    // is is part of the answer set; controls focii
+                        color: colors(i)
+                    })
+                }
+
+                gameManager("start");
+                start();
+            });
+        }
+        build();
+
+
+        // Build the force simulation
+        function start() {
+            
+            // Create links
+            var glinks = svg.selectAll(".link")
+                .data(wordLinks, function (d) { return d.source.id + "-" + d.target.id; })
+                .enter().insert("line", ".gnode").attr("class", "link");
+            var glinks = svg.selectAll(".link")
+                .data(wordLinks, function (d) { return d.source.id + "-" + d.target.id; })
+                .exit().remove()
+
+            // Create nodes (well, g-elements).  Add circles, text, & event listeners
+            var gnodes = svg.selectAll("g")
+                .data(words("show", 1), function id(d, i) { return d.id; })
+                .enter().append("g").attr("class", function (d) { return "gnode g" + d.id; })
+                .classed("next", function (d) { return (boldIt && d.id == 0) ? true : false ; });
+
+            var circles = gnodes.append("circle").attr("class", function (d) { return "c" + d.id; })
+                .attr("r", function (d) { return d.rad; }).style("fill", function (d, i) { return d.color; })
+                .attr("opacity", 0.7);
+
+            var texts = gnodes.append("text")
+                .attr("class", function (d) { return "text w" + d.id; }) // Tie into CSS
+                .text(function (d) { return (d.word); });
+
+            var actions = gnodes.on("click", nodeClicked);
+
+            // Link data to simulation and set it in motion.
+            simulation.nodes(words("show", 1)).force("link").links(wordLinks);
+            simulation.on("tick", ticked).alpha(0.5).restart();
+        }
+
+        // Manage node & link movement
+        function ticked(e) {
+            var k = .2 * simulation.alpha();
+
+            svg.selectAll(".gnode").attr("transform", function (d) {
+                // Set node location, multi-foci
+                d.y += (foci[d.answerSet].y - d.y) * k;
+                d.x += (foci[d.answerSet].x - d.x) * k;
+
+                // But be sure that nodes don't go out-of-bounds
+                d.y = Math.max(d.rad, Math.min(svgHeight - d.rad, d.y));
+                d.x = Math.max(d.rad, Math.min(svgWidth - d.rad, d.x));
+
+                return 'translate(' + [d.x, d.y] + ')';
+            });
+
+            // Set link locations
+            svg.selectAll(".link")
+                .attr("x1", function (d) { return d.source.x; })
+                .attr("y1", function (d) { return d.source.y; })
+                .attr("x2", function (d) { return d.target.x; })
+                .attr("y2", function (d) { return d.target.y; });
+        }
+
+        // User clicked a node
+        function nodeClicked(d) {
+            if (d.answerSet == 0) { // A node from the unused side
+                d.answerSet = 1; // Move gnode to other focii.
+                var answerLength = words("answerSet", 1).length; // answerLength includes just-clicked node
+                d.clickOrder = answerLength; // Set clickOrder
+                if (wordData.length > words("show", 1).length) { wordData[words("show", 1).length].show = 1; } // Show another node
+                if (answerLength > 1) { wordLinks.push({ "source": words("clickOrder", d.clickOrder - 1)[0].id, "target": d.id }); } // Add link
+                start();
+
+                svg.selectAll(".text").classed("next", function (d) { return (boldIt && d.index == answerLength) ? true : false; });  // Bold next word
+
+                // Check accuracy
+                var allCorrect = true;
+                for (i = 0; i < answerLength; i++) {  // cycle thru wordData by clickOrder (base 1); compare with wordData (correct answers)
+                    if (words("clickOrder", i + 1)[0].word != wordData[i].word) { allCorrect = false; break; }
+                }
+                if (allCorrect) { if (wordData.length == answerLength) { gameManager("win"); } else { gameManager("okay"); } }
+                else { gameManager("incorrect"); }
+
+            } else {   // d.answerSet == 1 (a node from the answerSet) 
+                d.answerSet = 0;
+                d.clickOrder = 0;
+                findLinks(d.id)
+                start();
+            }
+        }
+
+        // Return portion of wordData needed.
+        function words(key, val) {
+            switch (key) {
+                case "show": // returns an array of the shown nodes [val = 1] or unshown [val = 0]
+                    return wordData.filter(function (value, index) { return value.show == val ? true : false; });
+                    break;
+                case "answerSet": // returns an array of the answerSet nodes [val = 1] or un-answerSet [val = 0]
+                    return wordData.filter(function (value, index) { return value.answerSet == val ? true : false; });
+                    break;
+                case "clickOrder": // returns an array with the single requested clickOrder item
+                    return wordData.filter(function (value, index) { return value.clickOrder == val ? true : false; });
+                    break;
+            }
+        }
+
+        function findLinks(id) {
+            for (var i = 0; i < wordLinks.length; i++) {
+                if (id == wordLinks[i].source["id"] || id == wordLinks[i].target["id"]) {
+                    wordLinks.splice(i, 1);
+                }
+            }
+        }
+
+        // ********** BEGUB GAME MECHANICS / MANAGEMENT **********
+        var timer,                                          // Allows timer to be managed from multiple places
+            timerLength = 20;                               // Allows clean management of timer length
+
+        function gameManager(event) {
+            switch (event) {
+                case "okay":
+                    $('#message').html("So far so good.");
+                    break;
+                case "incorrect":
+                    $('#message').html("<b>There's a problem...</b>");
+                    break;
+                case "timerBar":
+                    $("#timerBar").attr("width", timerLength > 0 ? timerLength * 2 : 0).attr("opacity", (timerLength > 10 ? 0.5 : 1));
+                    break;
+                case "start":
+                    timerLength = ~~(wordData.length * 1.5);
+                    clearInterval(timer);
+                    timer = setInterval(gameTimer, 1000);
+                    $("#timerBar").attr("width", timerLength * 2);
+                    $("#timerBarBox").attr("width", timerLength * 2);
+                    $('#message').html("<b>Memorizinator</b>. Click the words in the correct order.");
+                    break;
+                case "win":
+                    $('#message').html("<b>You won!</b> Score = " + timerLength + 1);
+                    $("#timerBar").attr("width", 0);
+                    clearInterval(timer);
+                    break;
+                case "loss":
+                    $('#message').text("I'm sorry for your loss.");
+                    clearInterval(timer);
+                    break;
+                case "restart":
+                    wordData = [];   // All words (data) from quote from json
+                    wordLinks = [];     // Links (data) in the simulation
+                    svg.selectAll("g, .link").remove();
+                    build();
+                    break;
+                case "sayIt":
+                    $('#setsMessage').text("'Say It' only works in Chrome browser. Click again to silence.");
+                    if (window.speechSynthesis.speaking) {
+                        window.speechSynthesis.cancel();
+                    } else {
+                        window.speechSynthesis.speak(new SpeechSynthesisUtterance(quote));
+                    }
+                    break;
+                case "boldIt":
+                    boldIt = !boldIt;
+                    $('#setsMessage').text("Bolding: " + (boldIt ? "On" : "Off"));
+                    gameManager("restart");
+                    break;
+                case "showIt":
+                    $('#setsMessage').text("Click again to hide.");
+                    $('#message').text($('#message').text() == quote ? "" : quote);
+                    break; // t.replace(/(\B[a-z])/g, "-")
+            }
+        }
+
+
+        function gameTimer() {
+            if (timerLength-- >= 0) {
+                gameManager("timerBar");
+            } else {
+                gameManager("loss")
+                clearInterval(timer);
+            }
+        }
+
+    });
+</script>

@@ -1,0 +1,14 @@
+{
+  "nodes": [
+      { "cit": "Williams Shedd", "text": "A ship in harbour is safe, but that is not what ships are built for." },
+      { "cit": "John 3:16", "text": "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life." },
+      { "cit": "2 Timothy 4:7", "text": "I have fought the good fight, I have finished the race, I have kept the faith." },
+      { "cit": "2 Timothy 1:7", "text": "For God has not given us a spirit of timidity, but of power and love and discipline." },
+      { "cit": "Acts 2:38", "text": "Peter replied, Repent and be baptized, every one of you, in the name of Jesus Christ for the forgiveness of your sins. And you will receive the gift of the Holy Spirit."},
+      { "cit": "Walt Disney", "text": "When you're curious, you find lots of interesting things to do."},
+      { "cit": "Gettysburg Address", "text": "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal." },
+      { "cit": "Constitution Preamble", "text": "We the People of the United States, in Order to form a more perfect Union, establish Justice, insure domestic Tranquility, provide for the common defense, promote the general Welfare, and secure the Blessings of Liberty to ourselves and our Posterity, do ordain and establish this Constitution for the United States of America." }
+],
+  "links": [
+  ]
+}
