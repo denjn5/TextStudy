@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>f0a70ba3-f92a-47dd-a71f-5feebdf7cfeb</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>TextStudy.py</StartupFile>
+    <StartupFile>Working\parse_text.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,6 +23,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="TextStudy.py" />
+    <Compile Include="Working\parse_text.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Apps\colors.js" />
@@ -33,10 +36,14 @@
     <Content Include="README.md" />
     <Content Include="Apps\skinny_skel.css" />
     <Content Include="Apps\typeit.html" />
+    <Content Include="Working\rom.txt" />
+    <Content Include="Working\rom1.txt" />
+    <Content Include="Working\scrub_plan.md" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="External\" />
     <Folder Include="Apps\" />
+    <Folder Include="Working\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
