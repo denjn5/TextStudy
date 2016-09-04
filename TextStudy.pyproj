@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>f0a70ba3-f92a-47dd-a71f-5feebdf7cfeb</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Working\parse_text.py</StartupFile>
+    <StartupFile>TextStudy.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -29,6 +29,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Apps\colors.js" />
+    <Content Include="Apps\words.html" />
+    <Content Include="Apps\words.json" />
     <Content Include="index.html" />
     <Content Include="Apps\memory.html" />
     <Content Include="Apps\memory_readme.md" />
@@ -37,8 +39,9 @@
     <Content Include="Apps\skinny_skel.css" />
     <Content Include="Apps\typeit.html" />
     <Content Include="Working\rom.txt" />
-    <Content Include="Working\rom1.txt" />
+    <Content Include="Working\rom_test.txt" />
     <Content Include="Working\scrub_plan.md" />
+    <Content Include="Working\words.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="External\" />

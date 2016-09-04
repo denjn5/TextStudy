@@ -245,3 +245,11 @@ ModelManifest.xml
 .fake/
 /Working/rom.txt
 /Working/rom1.txt
+/Working/concordance.pdf
+/Working/concordance.txt
+/Working/greek_lexicon.xml
+/Working/hebrew_lexicon.xml
+/Working/links.json
+/Working/nodes.json
+/Working/rom_test.txt
+/Working/words.json

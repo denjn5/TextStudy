@@ -1,24 +1,41 @@
-import re
+import regex as re
 import sys
+import json
 
 nodes = []
 eWords = []
 links = []
 eID = 1
+book = "Rom "
 
-with open(r'C:\Users\denjn\Source\Repos\TextStudy\Working\rom1.txt') as f:
+# TODO: check out re's -- maybe precompiles -- what's that do to my re statements?
+# TODO: whole book in 1 text file -- need to append book name to beginning of chapter starts [2:1]
+# TODO: save results to json
+# https://www.blueletterbible.org/lang/lexicon/lexicon.cfm?Strongs=G3972&t=KJV&ss=1
+
+with open(r'C:\Users\denjn\Source\Repos\TextStudy\Working\rom.txt') as f:
     lines = f.readlines()
 
-btext = lines[0]
-book_chapter = re.findall(r'\[([1-3A-Za-z]* [0-9]{1,3}:)[0-9]{1,3}\]', btext)[0] # finds full ref, e.g., [Ro 1:1]
+bible_text = lines[0]
 
+# loop through chapters, adding in the chapter & : before each verse number
+# then replace the verse references with chapter:verse references
+for chapter_number in range(1,17):
+    verse_refs = re.findall(r'\[([0-9]{1,3})\].*(?=\[' + str(chapter_number + 1) + ':)', bible_text, overlapped=True)
+    for verse_ref in verse_refs:
+        bible_text = re.sub(r'\[(' + verse_ref + ')\]', r'[' + str(chapter_number) + r':\1]', bible_text, 1)
+        
+    
 # TODO: fill in book_chapter for hard-coding below
-btext = re.sub(r'\[([0-9])\]', r'|[' + book_chapter + r'\1]', btext) # adds split char and full ref to verse
-verses = btext.split('|')
+bible_text = re.sub(r'(\[[0-9]{1,3}:[0-9]{1,3}\])', r'|\1', bible_text) # adds split char and full ref to verse
+verses = bible_text.split('|')
 
 # ***** begin loop through verses *****
 for verse in verses:
-    ref = re.findall(r'\[([1-3A-Za-z]* [0-9]{1,3}:[0-9]{1,3})\]', verse)[0] 
+    if len(verse) == 0: 
+        continue
+
+    ref = book + re.findall(r'\[([0-9]{1,3}:[0-9]{1,3})\]', verse)[0] 
 
     words = re.findall(r'([A-Za-z]*)(g[0-9]{1,4})', verse)
 
@@ -42,7 +59,7 @@ for verse in verses:
         else:
             eWords.append(eWord)
             eID = len(eWords)
-            nodes.append({ "wrdID": eID, "wrd": eWord, "rt": "", "cnt": 1, "refs": ref })
+            nodes.append({ "wrdID": eID, "wrd": eWord, "cnt": 1, "refs": ref })
 
         try:
             gNode = ''
@@ -55,7 +72,7 @@ for verse in verses:
             if gNode['refs'].find(ref) == -1: 
                 gNode['refs'] += "; " + ref
         else:
-            nodes.append({ "wrdID": gID, "wrd": "", "rt": "", "cnt": 1, "refs": ref })
+            nodes.append({ "wrdID": gID, "wrd": "", "cnt": 1, "refs": ref })
 
 
         try:
@@ -69,4 +86,7 @@ for verse in verses:
         else:
             links.append({ "linkID": len(links), "source": gID, "target": eID, "cnt": 1 })
 
-var = 1
+with open(r'C:\Users\denjn\Source\Repos\TextStudy\Working\nodes.json', 'w') as outfile:
+    json.dump(nodes, outfile)
+with open(r'C:\Users\denjn\Source\Repos\TextStudy\Working\links.json', 'w') as outfile:
+    json.dump(links, outfile)
