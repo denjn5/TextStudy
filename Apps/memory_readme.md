@@ -1,5 +1,5 @@
 ## Memorizinator Game
-A little memory game to help learn big ideas.
+A little memory game to help learn big ideas. Play it at https://bl.ocks.org/denjn5/878d1ef107a3962db18a01720a1b551f.
 
 1. Game timer starts automatically (1.5 seconds / word).
 2. Click the words in the proper order.
@@ -14,13 +14,18 @@ A little memory game to help learn big ideas.
 
 
 ## D3 Force Simulation Notes
-* This game leverages the D3 Force Simulation (version 4) mechanics.  It incorporates:
-  * Multi-foci
+* Memorizinator leverages the excellent D3 Force Simulation (version 4) mechanics.  It incorporates:
+  * Multi-foci (with responsive width!)
   * Adds nodes
   * Adds links and removes links on the fly
   * Event handling
   * Text centered in nodes (overcomes Firefox vertical-align problem)
 
+## Attributions
+* D3: https://d3js.org/
+* Framework: http://getskeleton.com/
+* Icons: http://www.entypo.com/
+* Colors: https://coolors.co/
   
 ## TODO
 * Multiple choice or Pairings game option

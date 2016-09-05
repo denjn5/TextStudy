@@ -1,91 +1,178 @@
 ﻿<!DOCTYPE html>
 <meta charset="utf-8">
+<title>Words Explorer</title>
+<link rel="stylesheet" href="skinny_skel.css" type="text/css" media="screen" />
 <style>
-    .links line {
-        stroke: #999;
-        stroke-opacity: 0.6;
-    }
+  #container {
+    height: 400px;
+  }
 
-    .nodes circle {
-        stroke: #fff;
-        stroke-width: 1.5px;
-    }
+  .link {
+    stroke: #999;
+    stroke-opacity: 0.6;
+  }
+
+  .gnode {
+    stroke: #fff;
+    stroke-width: 1.5px;
+  }
 </style>
-<svg width="960" height="600"></svg>
+<body>
+  <div class="nine columns" id="container">
+    <svg id="gameboard"></svg>
+  </div>
+</body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script>
+$(function () {
+  // ********** EVENTS **********
+  $(window).resize(function () {
+    gWidth = $('#container').width();
+    foci = [{ x: gWidth * 0.5, y: gHeight * 0.5 }];
+    start();
+  });
 
-var svg = d3.select("svg"),
-    width = +svg.attr("width"),
-    height = +svg.attr("height");
+  // ********** D3 HAPPENS HERE **********
+  // Globals
+  var wordData,   // All words (data) from text from json
+    wordLinks,     // Links (data) in the simulation
+    gWidth = $('#container').width(),     // Width of the svg palette
+    gHeight = $('#container').height(),    // Height of the svg palette
+    foci = [{ x: gWidth * 0.5, y: gHeight * 0.5 }], // Sets 2 foci on page
+    context = "ref",    // lang[uage], ref[erence], word, id
+    scope = "Rom 6:2"; // 
 
-var color = d3.scaleOrdinal(d3.schemeCategory20);
+  // D3 Globals
+  var svg = d3.select("#gameboard"),
+    radScale = d3.scaleLinear().domain([1, 250]).range([5, 40]),
+    color = d3.scaleOrdinal(d3.schemeCategory20);
 
-var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("charge", d3.forceManyBody())
-    .force("center", d3.forceCenter(width / 2, height / 2));
+  var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function (d) { return d.id; }))
+    .force("charge", d3.forceManyBody().strength(-50))
+    //.force("collide", d3.forceCollide(function (d) { return d.rad; }))
 
-d3.json("words.json", function(error, graph) {
-    if (error) throw error;
 
-    var link = svg.append("g")
-        .attr("class", "links")
-        .selectAll("line")
-        .data(graph.links)
-        .enter().append("line")
-        .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+  function get_words() {
+    d3.json("words.json", function (error, graph) {
+      if (error) throw error;
 
-    var node = svg.append("g")
-        .attr("class", "nodes")
-        .selectAll("circle")
-        .data(graph.nodes)
-        .enter().append("circle")
-        .attr("r", 5)
-        .attr("fill", function(d) { return color(d.group); })
-        .call(d3.drag()
+      wordData = choose_words(graph.nodes, context, scope);
+      wordLinks = choose_links(graph.links, wordData);
+
+      start();
+
+    });
+  }
+
+  function start() {
+    // Create links
+    var links = svg.selectAll(".link")
+      .data(wordLinks, function (d) { return d.source.id + "-" + d.target.id; })
+      .enter().insert("line")
+      .attr("class", "link").attr("stroke-width", function (d) { return Math.sqrt(d.value); });
+
+    var gnodes = svg.selectAll("g")
+      .data(wordData, function id(d, i) { return d.id; })
+      .enter().append("g").attr("class", function (d) { return "gnode g" + d.id; });
+
+    var circles = gnodes.append("circle").attr("class", function (d) { return "c" + d.id; })
+      .attr("r", function (d) { return radScale(d.value); })
+      .attr("fill", function (d) { return color(d.group); })
+      //.attr("opacity", 0.7)
+      .call(d3.drag()
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended));
 
-    node.append("title")
-        .text(function(d) { return d.id; });
+    gnodes.append("title")
+        .text(function (d) { return d.id; });
 
-    simulation
-        .nodes(graph.nodes)
-        .on("tick", ticked);
 
-    simulation.force("link")
-        .links(graph.links);
+    simulation.nodes(wordData).force("link").links(wordLinks);
+    simulation.on("tick", ticked).alpha(0.5).restart();
 
-    function ticked() {
-        link
-            .attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.target.x; })
-            .attr("y2", function(d) { return d.target.y; });
+  }
 
-        node
-            .attr("cx", function(d) { return d.x; })
-            .attr("cy", function(d) { return d.y; });
+
+  // Manage node & link movement
+  function ticked(e) {
+    var k = .2 * simulation.alpha();
+
+    svg.selectAll(".gnode").attr("transform", function (d) {
+      // Set node location, multi-foci
+      d.y += (foci[0].y - d.y) * k;
+      d.x += (foci[0].x - d.x) * k;
+
+      // But be sure that nodes don't go out-of-bounds
+      //d.y = Math.max(d.rad, Math.min(gHeight - d.rad, d.y));
+      //d.x = Math.max(d.rad, Math.min(gWidth - d.rad, d.x));
+
+      return 'translate(' + [d.x, d.y] + ')';
+    });
+
+    // Set link locations
+    svg.selectAll(".link")
+        .attr("x1", function (d) { return d.source.x; })
+        .attr("y1", function (d) { return d.source.y; })
+        .attr("x2", function (d) { return d.target.x; })
+        .attr("y2", function (d) { return d.target.y; });
+  }
+
+
+  // Return portion of wordData needed.
+  function choose_words(data, key, val) {
+    switch (key) {
+      case "language": // 1 = English, 2 = Greek, 3 = Hebrew
+        return data.filter(function (value, index) { return value.group == 1 ? true : false; });
+        break;
+      case "ref": // returns an array of the nodes with this ref[erence]
+        re_verse = RegExp(val + '\\b'); // the verse reference and a word boundary
+        return data.filter(function (value, index) {
+          return value.refs.match(re_verse) != null ? true : false;
+        });
+        break;
+      case "word": // returns an array with the single(?) requested word
+        return data.filter(function (value, index) { return value.word == val ? true : false; });
+        break;
+      case "id": // returns an array with the single requested id
+        return data.filter(function (value, index) { return value.id == val ? true : false; });
+        break;
     }
-});
+  }
 
-function dragstarted(d) {
+  // Return the links that connect to these circles
+  function choose_links(data, words) {
+    ids = []
+    for (i = 0; i < words.length; i++) {
+      ids.push(words[i]['id']);
+    }
+
+    return data.filter(function (value, index) {
+      return ids.indexOf(value.source) > -1 && ids.indexOf(value.target) > -1 ? true : false;
+    });
+
+  }
+
+
+  function dragstarted(d) {
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
     d.fx = d.x;
     d.fy = d.y;
-}
+  }
 
-function dragged(d) {
+  function dragged(d) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
-}
+  }
 
-function dragended(d) {
+  function dragended(d) {
     if (!d3.event.active) simulation.alphaTarget(0);
     d.fx = null;
     d.fy = null;
-}
+  }
 
+  get_words(); // GO!
+});
 </script>

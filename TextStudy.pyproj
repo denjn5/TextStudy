@@ -29,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Apps\colors.js" />
+    <Content Include="Apps\words_orig.html" />
     <Content Include="Apps\words.html" />
     <Content Include="Apps\words.json" />
     <Content Include="index.html" />
