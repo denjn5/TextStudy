@@ -168,7 +168,7 @@ p {
 
 
 /* Forms */
-select {
+select, .select {
   color: #840000;
   height: 22px;
   padding: 1px 5px; /* The 6px vertically centers text on FF, ignored by Webkit */
@@ -177,7 +177,7 @@ select {
   box-shadow: none;
   box-sizing: border-box; }
 
-select:hover {
+select:hover, .select:hover {
   border-color: #840000;
 }
 

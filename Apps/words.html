@@ -16,10 +16,22 @@
     stroke: #fff;
     stroke-width: 1.5px;
   }
+
+  #verse_select {
+    position: absolute;
+    top: 3px;
+    right: 2px;
+    width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    display:inline;
+        
+  }
 </style>
 <body>
   <div class="nine columns" id="container">
     <svg id="gameboard"></svg>
+    <div class="select" id="verse_select" contenteditable="true"></div>
   </div>
 </body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -31,6 +43,16 @@ $(function () {
     gWidth = $('#container').width();
     foci = [{ x: gWidth * 0.5, y: gHeight * 0.5 }];
     start();
+  });
+
+  $('#verse_select').keydown(function (event) {
+    if (event.keyCode == 13) {
+      scope = $('#verse_select').text();
+      svg.selectAll("g, .link").remove();
+
+      get_words();
+      event.preventDefault();
+    }
   });
 
   // ********** D3 HAPPENS HERE **********
