@@ -13,11 +13,18 @@
   * panel: word, links to verse refs
 
 ### Passage-Centered
-* user enters passage
-  * Greek/Hebrew words appear (single size, color = language)
-  * words not referencing that passage disappear
-  * links between words appear
-  * panel: passage ref, verse quote in several versions, highlight unique words
+user enters passage
+* Start here
+  * TODO: Pick random passage
+* Greek/Hebrew words appear (single size, color = language)
+  * TODO: Greek -> white circle, maroon outline
+  * TODO: English -> colorful, opacity = 0.7
+* words not referencing that passage disappear
+* links between words
+  * TODO: Words Parser -> ignore capitalization when checking for previous
+  * TODO: Words -> add Greek word to words.json, Greek definitions to full_text.json
+* panel: passage ref, verse quote in several versions, highlight unique words
+  * TODO: Color words same as circle color
 
 ### Word-In-Passage-Centered
 * user clicks word from passage-centered or reference from word-centered
