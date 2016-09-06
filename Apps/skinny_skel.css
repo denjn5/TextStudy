@@ -38,12 +38,9 @@
 
 /* For devices larger than 550px */
 @media (min-width: 550px) {
-  .container {
-    width: 80%; }
-  .columns {
-    margin-left: 4%; }
-  .columns:first-child {
-    margin-left: 0; }
+  .container                      { width: 80%; }
+  .columns                        { margin-left: 4%; }
+  .columns:first-child            { margin-left: 0; }
 
   .one.columns                    { width: 4.66666666667%; }
   .two.columns                    { width: 13.3333333333%; }
@@ -58,10 +55,6 @@
   .eleven.columns                 { width: 91.3333333333%; }
   .twelve.columns                 { width: 100%; margin-left: 0; }
 
-  .one-third.columns              { width: 30.6666666667%; }
-  .two-thirds.columns             { width: 65.3333333333%; }
-  .one-half.columns               { width: 48%; }
-
   /* Offsets */
   .offset-by-one.columns          { margin-left: 8.66666666667%; }
   .offset-by-two.columns          { margin-left: 17.3333333333%; }
@@ -74,10 +67,6 @@
   .offset-by-nine.columns         { margin-left: 78.0%;          }
   .offset-by-ten.columns          { margin-left: 86.6666666667%; }
   .offset-by-eleven.columns       { margin-left: 95.3333333333%; }
-
-  .offset-by-one-third.columns    { margin-left: 34.6666666667%; }
-  .offset-by-two-thirds.columns   { margin-left: 69.3333333333%; }
-  .offset-by-one-half.columns     { margin-left: 52%; }
 }
 
 

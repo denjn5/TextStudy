@@ -2,20 +2,29 @@
 <meta charset="utf-8">
 <title>Words Explorer</title>
 <link rel="stylesheet" href="skinny_skel.css" type="text/css" media="screen" />
+<link rel="shortcut icon" href="">
 <style>
   #container {
     height: 400px;
   }
 
   .link {
-    stroke: #999;
-    stroke-opacity: 0.6;
+    stroke: #c8bfc7;
+    stroke-width: 1px;
   }
 
-  .gnode {
+  circle {
     stroke: #fff;
     stroke-width: 1.5px;
   }
+
+  .text { /* centers text in node */
+    text-anchor: middle;
+    alignment-baseline: central;
+    pointer-events: none;
+    transform: translateY(1%); /* Firefox */
+  }
+
 
   #verse_select {
     position: absolute;
@@ -29,9 +38,13 @@
   }
 </style>
 <body>
-  <div class="nine columns" id="container">
+  <div class="offset-by-one eight columns" id="container">
     <svg id="gameboard"></svg>
     <div class="select" id="verse_select" contenteditable="true"></div>
+  </div>
+  <div class="two columns" id="commentary">
+    <h3 id="title"></h3>
+    <div id="verse"></div>
   </div>
 </body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -51,12 +64,17 @@ $(function () {
       svg.selectAll("g, .link").remove();
 
       get_words();
+      get_definitions();
       event.preventDefault();
     }
   });
 
   // ********** D3 HAPPENS HERE **********
   // Globals
+  const CONTEXT = { LANGUAGE: 'Lanugage', REFERENCE: 'References', WORD: 'Word', ID: 'ID' }
+  const LANGUAGE = { ENGLISH: 'e', GREEK: 'g', HEBREW: 'h' }
+
+  
   var wordData,   // All words (data) from text from json
     wordLinks,     // Links (data) in the simulation
     gWidth = $('#container').width(),     // Width of the svg palette
@@ -71,45 +89,61 @@ $(function () {
     color = d3.scaleOrdinal(d3.schemeCategory20);
 
   var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function (d) { return d.id; }))
-    .force("charge", d3.forceManyBody().strength(-50))
-    //.force("collide", d3.forceCollide(function (d) { return d.rad; }))
+    //.force("link", d3.forceLink().distance(20).strength(0.6))
+    .force("link", d3.forceLink().id(function (d) { return d.id; }).distance(50))
+    .force("charge", d3.forceManyBody().strength(-250))
+    .force("collide", d3.forceCollide(function (d) { return 25; }))
 
 
   function get_words() {
-    d3.json("words.json", function (error, graph) {
+    d3.json("words.json", function (error, words) {
       if (error) throw error;
 
-      wordData = choose_words(graph.nodes, context, scope);
-      wordLinks = choose_links(graph.links, wordData);
+      wordData = choose_words(words.nodes, context, scope);
+      wordLinks = choose_links(words.links, wordData);
 
       start();
 
     });
   }
 
+  function get_definitions() {
+    d3.json("full_text.json", function (error, definitions) {
+      if (error) throw error;
+
+      verseData = choose_verse(definitions.verses, context, scope);
+
+      $('#verse').text(verseData[0].text);
+      $('#title').html(scope);
+    });
+  }
+
   function start() {
     // Create links
     var links = svg.selectAll(".link")
-      .data(wordLinks, function (d) { return d.source.id + "-" + d.target.id; })
+      .data(wordLinks, function id(d, i) { return d.id; })
       .enter().insert("line")
-      .attr("class", "link").attr("stroke-width", function (d) { return Math.sqrt(d.value); });
+      .attr("class", "link").attr("stroke-width", 1); // function (d) { return Math.sqrt(d.cnt); }
 
     var gnodes = svg.selectAll("g")
       .data(wordData, function id(d, i) { return d.id; })
       .enter().append("g").attr("class", function (d) { return "gnode g" + d.id; });
 
     var circles = gnodes.append("circle").attr("class", function (d) { return "c" + d.id; })
-      .attr("r", function (d) { return radScale(d.value); })
-      .attr("fill", function (d) { return color(d.group); })
-      //.attr("opacity", 0.7)
+      .attr("r", 25)  // function (d) { return radScale(d.cnt); }
+      .attr("fill", function (d) { return color(d.lang); })
       .call(d3.drag()
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended));
 
-    gnodes.append("title")
-        .text(function (d) { return d.id; });
+    var texts = gnodes.append("text")
+      .attr("class", function (d) { return "text w" + d.id; }) // Tie into CSS
+      .text(function (d) {
+        return (d.word);
+      });
+
+    gnodes.append("title").text(function (d) { return d.id; });
 
 
     simulation.nodes(wordData).force("link").links(wordLinks);
@@ -121,6 +155,13 @@ $(function () {
   // Manage node & link movement
   function ticked(e) {
     var k = .2 * simulation.alpha();
+
+    // Set link locations
+    svg.selectAll(".link")
+        .attr("x1", function (d) { return d.source.x; })
+        .attr("y1", function (d) { return d.source.y; })
+        .attr("x2", function (d) { return d.target.x; })
+        .attr("y2", function (d) { return d.target.y; });
 
     svg.selectAll(".gnode").attr("transform", function (d) {
       // Set node location, multi-foci
@@ -134,20 +175,37 @@ $(function () {
       return 'translate(' + [d.x, d.y] + ')';
     });
 
-    // Set link locations
-    svg.selectAll(".link")
-        .attr("x1", function (d) { return d.source.x; })
-        .attr("y1", function (d) { return d.source.y; })
-        .attr("x2", function (d) { return d.target.x; })
-        .attr("y2", function (d) { return d.target.y; });
   }
 
 
+
+
+
+
+
+  function dragstarted(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+
+  function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+  }
+
+  function dragended(d) {
+    if (!d3.event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+
+  // ********** CHOOSE_... HELPERS **********
   // Return portion of wordData needed.
   function choose_words(data, key, val) {
     switch (key) {
-      case "language": // 1 = English, 2 = Greek, 3 = Hebrew
-        return data.filter(function (value, index) { return value.group == 1 ? true : false; });
+      case "language": // e = English, g = Greek, h = Hebrew
+        return data.filter(function (value, index) { return value.lang == val ? true : false; });
         break;
       case "ref": // returns an array of the nodes with this ref[erence]
         re_verse = RegExp(val + '\\b'); // the verse reference and a word boundary
@@ -177,24 +235,20 @@ $(function () {
 
   }
 
-
-  function dragstarted(d) {
-    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
+  // Return portion of wordData needed.
+  function choose_verse(data, key, val) {
+    switch (key) {
+      case "ref": // returns an array of the nodes with this ref[erence]
+        re_verse = RegExp(val + '\\b'); // the verse reference and a word boundary
+        return data.filter(function (value, index) {
+          return value.ref.match(re_verse) != null ? true : false;
+        });
+        break;
+    }
   }
 
-  function dragged(d) {
-    d.fx = d3.event.x;
-    d.fy = d3.event.y;
-  }
-
-  function dragended(d) {
-    if (!d3.event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
-  }
 
   get_words(); // GO!
+  get_definitions();
 });
 </script>

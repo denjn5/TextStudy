@@ -5,6 +5,7 @@ import json
 nodes = []
 eWords = []
 links = []
+full_text = []
 eID = 1
 book = "Rom "
 
@@ -36,18 +37,22 @@ for verse in verses:
         continue
 
     ref = book + re.findall(r'\[([0-9]{1,3}:[0-9]{1,3})\]', verse)[0] 
-
     words = re.findall(r'([A-Za-z]*)(g[0-9]{1,4})', verse)
+    text = re.sub(r'(\[[0-9]{1,3}:[0-9]{1,3}\]\xa0|g[0-9]{1,5})', '', verse).strip()
+
+    # Bible Text
+    full_text.append({ "ref": ref, "text": re.sub('  ', ' ', text) })
+
 
     for word in words:
     
         eWord = word[0]
         gID = word[1]
 
-        # is the word already in the list?
+        # English Words
         try:
             eNode = ''
-            eNode = next(item for item in nodes if item["wrd"] == eWord)
+            eNode = next(item for item in nodes if item["word"] == eWord)
         except StopIteration:
             pass
 
@@ -55,15 +60,16 @@ for verse in verses:
             eNode['cnt'] += 1
             if eNode['refs'].find(ref) == -1: 
                 eNode['refs'] += "; " + ref
-            eID = eNode['wrdID']
+            eID = eNode['id']
         else:
             eWords.append(eWord)
             eID = len(eWords)
-            nodes.append({ "wrdID": eID, "wrd": eWord, "cnt": 1, "refs": ref })
-
+            nodes.append({ "id": eID, "word": eWord, "lang": "e", "cnt": 1, "refs": ref })
+        
+        # Greek Words
         try:
             gNode = ''
-            gNode = next(item for item in nodes if item["wrdID"] == gID)
+            gNode = next(item for item in nodes if item["id"] == gID)
         except StopIteration:
             pass
 
@@ -72,9 +78,9 @@ for verse in verses:
             if gNode['refs'].find(ref) == -1: 
                 gNode['refs'] += "; " + ref
         else:
-            nodes.append({ "wrdID": gID, "wrd": "", "cnt": 1, "refs": ref })
+            nodes.append({ "id": gID, "word": "", "lang": "g", "cnt": 1, "refs": ref })
 
-
+        # Links
         try:
             link = '' 
             link = next(item for item in links if (item["source"] == gID and item["target"] == eID))
@@ -84,9 +90,13 @@ for verse in verses:
         if link != '':
             link['cnt'] += 1
         else:
-            links.append({ "linkID": len(links), "source": gID, "target": eID, "cnt": 1 })
+            links.append({ "id": len(links), "source": gID, "target": eID, "cnt": 1 })
+
 
 with open(r'C:\Users\denjn\Source\Repos\TextStudy\Working\nodes.json', 'w') as outfile:
     json.dump(nodes, outfile)
 with open(r'C:\Users\denjn\Source\Repos\TextStudy\Working\links.json', 'w') as outfile:
     json.dump(links, outfile)
+with open(r'C:\Users\denjn\Source\Repos\TextStudy\Working\full_text.json', 'w') as outfile:
+    json.dump(full_text, outfile)
+

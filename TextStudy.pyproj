@@ -29,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Apps\colors.js" />
+    <Content Include="Apps\full_text.json" />
     <Content Include="Apps\words_orig.html" />
     <Content Include="Apps\words.html" />
     <Content Include="Apps\words.json" />
@@ -39,6 +40,13 @@
     <Content Include="README.md" />
     <Content Include="Apps\skinny_skel.css" />
     <Content Include="Apps\typeit.html" />
+    <Content Include="Working\concordance.pdf" />
+    <Content Include="Working\concordance.txt" />
+    <Content Include="Working\full_text.json" />
+    <Content Include="Working\greek_lexicon.xml" />
+    <Content Include="Working\hebrew_lexicon.xml" />
+    <Content Include="Working\links.json" />
+    <Content Include="Working\nodes.json" />
     <Content Include="Working\rom.txt" />
     <Content Include="Working\rom_test.txt" />
     <Content Include="Working\scrub_plan.md" />
