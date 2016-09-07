@@ -38,7 +38,8 @@ for verse in verses:
 
     ref = book + re.findall(r'\[([0-9]{1,3}:[0-9]{1,3})\]', verse)[0] 
     words = re.findall(r'([A-Za-z]*)(g[0-9]{1,4})', verse)
-    text = re.sub(r'(\[[0-9]{1,3}:[0-9]{1,3}\]\xa0|g[0-9]{1,5})', '', verse).strip()
+    text = re.sub(r'\[[0-9]{1,3}:[0-9]{1,3}\]\xa0', '', verse).replace("  ", " ").strip()
+    text = re.sub(r'(g[0-9]{1,5})', r' (\1)', text)
 
     # Bible Text
     full_text.append({ "ref": ref, "text": re.sub('  ', ' ', text) })
@@ -50,18 +51,18 @@ for verse in verses:
         gID = word[1]
 
         # English Words
-        try:
+        try: # has this been recorded before?
             eNode = ''
-            eNode = next(item for item in nodes if item["word"] == eWord)
+            eNode = next(item for item in nodes if item["word"].lower() == eWord.lower())
         except StopIteration:
             pass
 
-        if eNode != '':
+        if eNode != '':  # existing entry
             eNode['cnt'] += 1
             if eNode['refs'].find(ref) == -1: 
                 eNode['refs'] += "; " + ref
             eID = eNode['id']
-        else:
+        else: # new entry
             eWords.append(eWord)
             eID = len(eWords)
             nodes.append({ "id": eID, "word": eWord, "lang": "e", "cnt": 1, "refs": ref })
@@ -73,12 +74,12 @@ for verse in verses:
         except StopIteration:
             pass
 
-        if gNode != '':
+        if gNode != '': #existing entry
             gNode['cnt'] += 1
             if gNode['refs'].find(ref) == -1: 
                 gNode['refs'] += "; " + ref
-        else:
-            nodes.append({ "id": gID, "word": "", "lang": "g", "cnt": 1, "refs": ref })
+        else: # new entry
+            nodes.append({ "id": gID, "word": gID, "lang": "g", "cnt": 1, "refs": ref })
 
         # Links
         try:
@@ -87,10 +88,12 @@ for verse in verses:
         except StopIteration:
             pass
 
-        if link != '':
+        if link != '': #existing entry
             link['cnt'] += 1
-        else:
-            links.append({ "id": len(links), "source": gID, "target": eID, "cnt": 1 })
+            if link['refs'].find(ref) == -1: 
+                link['refs'] += "; " + ref
+        else: #new entry
+            links.append({ "id": len(links), "source": gID, "target": eID, "cnt": 1, "refs": ref  })
 
 
 with open(r'C:\Users\denjn\Source\Repos\TextStudy\Working\nodes.json', 'w') as outfile:

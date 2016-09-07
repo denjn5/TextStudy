@@ -17,8 +17,6 @@ user enters passage
 * Start here
   * TODO: Pick random passage
 * Greek/Hebrew words appear (single size, color = language)
-  * TODO: Greek -> white circle, maroon outline
-  * TODO: English -> colorful, opacity = 0.7
 * words not referencing that passage disappear
 * links between words
   * TODO: Words Parser -> ignore capitalization when checking for previous

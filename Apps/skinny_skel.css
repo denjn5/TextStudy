@@ -39,7 +39,7 @@
 /* For devices larger than 550px */
 @media (min-width: 550px) {
   .container                      { width: 80%; }
-  .columns                        { margin-left: 4%; }
+  .columns                        { margin-left: 3%; }
   .columns:first-child            { margin-left: 0; }
 
   .one.columns                    { width: 4.66666666667%; }
@@ -125,7 +125,9 @@ p {
   border-radius: 4px;
   border: 1px solid #c8bfc7;
   cursor: pointer;
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  overflow: hidden;
+}
 
 .button:hover {
   border-color: #840000;

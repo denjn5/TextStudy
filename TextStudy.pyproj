@@ -23,16 +23,22 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="TextStudy.py" />
-    <Compile Include="Working\parse_text.py">
+    <Compile Include="Working\parse_greek_lexicon.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Working\parse_kvjec.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Apps\colors.js" />
     <Content Include="Apps\full_text.json" />
-    <Content Include="Apps\words_orig.html" />
     <Content Include="Apps\words.html" />
+    <Content Include="Apps\words_orig.html" />
+    <Content Include="Apps\words_v2.html" />
     <Content Include="Apps\words.json" />
+    <Content Include="Apps\words_readme.md" />
+    <Content Include="Apps\words_h.json" />
     <Content Include="index.html" />
     <Content Include="Apps\memory.html" />
     <Content Include="Apps\memory_readme.md" />
