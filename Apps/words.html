@@ -1,70 +1,167 @@
 ﻿<!DOCTYPE html>
 <meta charset="utf-8">
 <style>
+@import url('https://fonts.googleapis.com/css?family=PT+Sans+Narrow');
+
+html {
+  font-size: 70%; }
+body {
+  font-size: 1.4em; /* currently ems cause chrome bug misinterpreting rems on body element */
+  line-height: 1.6;
+  font-weight: 400;
+  font-family: "PT Sans Narrow", "Arial Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #840000; }
+
+#gameboard {
+    height: 400px;
+    width: 400px;
+  }
+
   path {
     stroke: #fff;
   }
 </style>
-<body>
-  <script src="https://d3js.org/d3.v4.min.js"></script>
-  <script>
+<h2 align=center id="title"></h2>
+<div align=center><svg id="gameboard"></svg></div>
+<label><input type="radio" name="mode" value="linear" checked> Linear</label>
+<label><input type="radio" name="mode" value="grouped"> Grouped</label>
+<div id="quote"></div>
 
-var width = 960,
-    height = 700,
-    radius = (Math.min(width, height) / 2) - 10;
-
-var formatNumber = d3.format(",d");
-
-var x = d3.scaleLinear()
-    .range([0, 2 * Math.PI]);
-
-var y = d3.scaleSqrt()
-    .range([0, radius]);
-
-var color = d3.scaleOrdinal(d3.schemeCategory20);
-
-var partition = d3.partition();
-
-var arc = d3.arc()
-    .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x0))); })
-    .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x1))); })
-    .innerRadius(function(d) { return Math.max(0, y(d.y0)); })
-    .outerRadius(function(d) { return Math.max(0, y(d.y1)); });
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script>
+$(function () {
+  // TODO: Transition between 'by location' and 'by count' https://strongriley.github.io/d3/ex/sunburst.html
 
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height)
-  .append("g")
-    .attr("transform", "translate(" + width / 2 + "," + (height / 2) + ")");
+  // ********** EVENTS **********
 
-d3.json("words_h.json", function(error, root) {
-  if (error) throw error;
+  // ********** D3 HAPPENS HERE **********
+  // Globals
+  //var verseData = versetohier();
 
-  root = d3.hierarchy(root);
-  root.sum(function(d) { return d.size; });
-  svg.selectAll("path")
-      .data(partition(root).descendants())
-    .enter().append("path")
-      .attr("d", arc)
-      .style("fill", function(d) { return color((d.children ? d : d.parent).data.name); })
-      .on("click", click)
-    .append("title")
-      .text(function(d) { return d.data.name + "\n" + formatNumber(d.value); });
-});
+  var gWidth = $('#gameboard').width(),   // Width of the svg palette
+    gHeight = $('#gameboard').height(),   // Height of the svg palette
+    radius = (Math.min(gWidth, gHeight) / 2) - 10,
+    quote = ["Rom 3:25", "Whom[g3739] God[g2316] hath set forth[g4388] to be a propitiation[g2435] through[g1223] faith[g4102] in[g1722] his[g846] blood[g129], to[g1519] declare[g1732] his[g846] righteousness[g1343] for[g1223] the remission[g3929] of sins[g265] that are past[g4266], through[g1722] the forbearance[g463] of God[g2316];"];
+    showQuote(quote),
+    toggle = "grouped"; // linear or grouped
 
-function click(d) {
-  svg.transition()
-      .duration(750)
-      .tween("scale", function() {
+  // D3 Globals
+  var formatNumber = d3.format(",d");
+  var x = d3.scaleLinear().range([0, 2 * Math.PI]);
+  var y = d3.scaleSqrt().range([0, radius]);
+
+  //var color = d3.scaleOrdinal(d3.schemeCategory20);
+  var color = d3.scaleLinear().domain([0, 0.5, 1]).range(['#f03b20', '#feb24c', '#ffeda0']);
+  //var color = d3.scaleLinear().domain([0, 0.5, 1]).range(['#2c7fb8', '#7fcdbb', '#edf8b1']);
+  //var color = d3.scaleLinear().domain([0, 0.5, 1]).range(['#ef8a62', '#f7f7f7', '#67a9cf']); // orange, white, blue
+  //var color = d3.scaleLinear().domain([0, 0.5, 1]).range(['#d7191c', '#ffffbf', '#2b83ba']); // red, yellow, blue
+
+  var root = textToHierarchy(quote[0], quote[1]);
+  var svg = d3.select("#gameboard").append("g")
+    .attr("transform", "translate(" + gHeight / 2 + "," + (gHeight / 2) + ")");
+
+  var partition = d3.partition();
+
+  var arc = d3.arc()
+    .startAngle(function (d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x0))); })
+    .endAngle(function (d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x1))); })
+    .innerRadius(function (d) { return Math.max(0, y(d.y0)); })
+    .outerRadius(function (d) { return Math.max(0, y(d.y1)); });
+
+  root.sum(function (d) { return toggle == "linear" ? d.size : d.grpSize; });
+
+  // Create the <g> (group) elements that will be populated with color and text
+  var g = svg.selectAll("g").data(partition(root).descendants()).enter().append("g");
+
+  // Add a <path d="[shape]"><title>[popup text]</title></path> to each <g> element; add event handler
+  var path = g.append("path")
+    .attr("d", arc).style("fill", function (d) { return d.parent ? color( d.x0) : "white"; })// color((d.children ? d : d.parent).data.name)
+    .attr("class", function (d) {return "w" + d.id })
+    .on("click", click)
+    .append("title").text(function (d) { return d.data.name + "\n" + formatNumber(d.value); });
+
+
+  $('input[type=radio][name=mode]').change(function () {
+    // TODO: Toggle: https://bl.ocks.org/kerryrodden/477c1bfb081b783f80ad
+
+    if (this.value === "linear") {
+      root.sum(function (d) { return d.size; });
+    } else {
+      root.sum(function (d) { return d.grpSize; });
+    }
+  });
+
+  
+  // Add this to each to each <g> element:
+  // <text transform="[degrees around]" x="[dist from center]" dx="[margin]">[Show this]</text>
+  var text = g.append("text")
+    .attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"; })
+    .attr('text-anchor', function (d) { return computeTextRotation(d) > 180 ? "end" : "start"; })
+    //.attr("x", 300)
+    .attr("dx", function (d) { return computeTextRotation(d) > 180 ? 13 : -13; }) // margin
+    .attr("dy", ".35em") // vertical-align
+    .text(function (d) { return (d.x0 != d.x1) ? d.data.word : ""; }); // don't show root
+
+
+  // ********** EVENT RESPONSE **********
+  function click(d) {
+    text.transition().attr("opacity", 0);
+
+    svg.transition().duration(750)
+      .tween("scale", function () {
         var xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
-            yd = d3.interpolate(y.domain(), [d.y0, 1]),
-            yr = d3.interpolate(y.range(), [d.y0 ? 20 : 0, radius]);
+          yd = d3.interpolate(y.domain(), [d.y0, 1]),
+          yr = d3.interpolate(y.range(), [d.y0 ? 20 : 0, radius]);
         return function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); };
       })
-    .selectAll("path")
-      .attrTween("d", function(d) { return function() { return arc(d); }; });
-}
+      .selectAll("path").attrTween("d", function (d) { return function () { return arc(d); } 
+      });
+  }
 
-d3.select(self.frameElement).style("height", height + "px");
-  </script>
+  // ********** HELPER FUNCTIONS **********
+  function computeTextRotation(d) {
+    var ang = ((x((d.x0 + d.x1) / 2) - Math.PI / 2) / Math.PI * 180);
+    return  (ang > 90) ? 180 + ang : ang;
+  }
+  
+  function showQuote(quote) {
+    $("#title").text(quote[0])
+    $("#quote").text(quote[1].replace(/[g[0-9]*]/g, ""))
+  }
+
+  function textToHierarchy(rootNode, quote) {
+    var vsWords = quote.replace(/[^A-Za-z0-9 /[]/g, "").replace(/[/[]/g, "|").split(" ");
+    var sbWords = [{ "name": rootNode, "parent": "" }];
+
+    for (i = 0; i < vsWords.length ; i++) {
+
+      //sbWords.filter(function (value) { return value == vsWords[i]; }).length;
+      word = vsWords[i].split("|"); 
+      
+      if (word.length == 1) {
+
+        sbWords.push({ "name": i, "word": word[0], "parent": rootNode, "size": 1, "grpSize": 0 });
+      } else {
+
+        // If this combo of English:Greek word exists, then add a 
+        filtered = sbWords.filter(function (value) { return value.word == word[1] && value.eWord == word[0]; });
+
+        var newGrpSize = 1;
+        if (filtered.length > 0) {
+          filtered[0].grpSize += 1;
+          newGrpSize = 0;
+        }
+                    
+        sbWords.push({ "name": word[1], "parent": i, "word": word[1], "size": 1, "grpSize": newGrpSize, "eWord": word[0] });
+        sbWords.push({ "name": i, "word": word[0], "parent": rootNode, "size": 0, "grpSize": 0 });
+      }
+    }
+
+    var root = d3.stratify().id(function (d) { return d.name; })
+      .parentId(function (d) { return d.parent; })(sbWords);
+    return root;
+  }
+});
+</script>

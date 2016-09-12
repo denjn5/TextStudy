@@ -33,6 +33,7 @@
   <ItemGroup>
     <Content Include="Apps\colors.js" />
     <Content Include="Apps\full_text.json" />
+    <Content Include="Apps\hierarchy_maker.js" />
     <Content Include="Apps\words.html" />
     <Content Include="Apps\words_orig.html" />
     <Content Include="Apps\words_v2.html" />
