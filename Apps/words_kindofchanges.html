@@ -1,18 +1,21 @@
 ﻿<!DOCTYPE html>
 <meta charset="utf-8">
 <style>
-@import url('https://fonts.googleapis.com/css?family=PT+Sans+Narrow');
+  @import url('https://fonts.googleapis.com/css?family=PT+Sans+Narrow');
 
-html {
-  font-size: 70%; }
-body {
-  font-size: 1.4em; /* currently ems cause chrome bug misinterpreting rems on body element */
-  line-height: 1.6;
-  font-weight: 400;
-  font-family: "PT Sans Narrow", "Arial Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #840000; }
+  html {
+    font-size: 70%;
+  }
 
-#gameboard {
+  body {
+    font-size: 1.4em; /* currently ems cause chrome bug misinterpreting rems on body element */
+    line-height: 1.6;
+    font-weight: 400;
+    font-family: "PT Sans Narrow", "Arial Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #840000;
+  }
+
+  #gameboard {
     height: 400px;
     width: 400px;
   }
@@ -59,62 +62,62 @@ $(function () {
   //var color = d3.scaleLinear().domain([0, 0.5, 1]).range(['#d7191c', '#ffffbf', '#2b83ba']); // red, yellow, blue
 
   var root = textToHierarchy(quote[0], quote[1]);
-  root.sum(function (d) { return toggle == "linear" ? d.size : d.grpSize; });
-  var svg = d3.select("#gameboard").append("g")
-    .attr("transform", "translate(" + gHeight / 2 + "," + (gHeight / 2) + ")");
-
   var partition = d3.partition();
-
   var arc = d3.arc()
-    .startAngle(function (d) {
-      return Math.max(0, Math.min(2 * Math.PI, x(d.x0)));
-    })
+    .startAngle(function (d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x0))); })
     .endAngle(function (d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x1))); })
     .innerRadius(function (d) { return Math.max(0, y(d.y0)); })
     .outerRadius(function (d) { return Math.max(0, y(d.y1)); });
 
 
-  // Create the <g> (group) elements that will be populated with color and text
-  g = svg.selectAll("g").data(partition(root).descendants()).enter().append("g");
+  function update() {
+    var svg = d3.select("#gameboard").append("g")
+      .attr("transform", "translate(" + gHeight / 2 + "," + (gHeight / 2) + ")");
 
-  // Add a <path d="[shape]"><title>[popup text]</title></path> to each <g> element; add event handler
-  var path = g.append("path")
-    .attr("d", arc).style("fill", function (d) {
-      return d.parent ? color(d.x0) : "white";
-    })// color((d.children ? d : d.parent).data.name)
-    .attr("class", function (d) { return "w" + d.id })
-    .on("click", click)
-    .append("title").text(function (d) { return d.data.name + "\n" + formatNumber(d.value); })
-    .each(stash);
+    root.sum(function (d) { return toggle == "linear" ? d.size : d.grpSize; });
 
-  // Add this to each to each <g> element:
-  // <text transform="[degrees around]" x="[dist from center]" dx="[margin]">[Show this]</text>
-  var text = g.append("text")
-    .attr("transform", function (d) {
-      return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")";
-    })
-    .attr('text-anchor', function (d) {
-      return computeTextRotation(d) > 180 ? "start" : "end"; // vs. "end"
-    })
-    //.attr("x", 300)
-    .attr("dx", function (d) { return computeTextRotation(d) > 180 ? -13 : 13; }) // margin
-    .attr("dy", ".35em") // vertical-align
-    .text(function (d) { return (d.x0 != d.x1) ? d.data.word : ""; }); // don't show root
+    // Create the <g> (group) elements that will be populated with color and text
+    var g = svg.selectAll("g").data(partition(root).descendants()).enter().append("g");
 
+    // Add a <path d="[shape]"><title>[popup text]</title></path> to each <g> element; add event handler
+    var path = g.append("path")
+      .attr("d", arc).style("fill", function (d) {
+        return d.parent ? color(d.x0) : "white";
+      })// color((d.children ? d : d.parent).data.name)
+      .attr("class", function (d) { return "w" + d.id })
+      .on("click", click)
+      .append("title").text(function (d) { return d.data.name + "\n" + formatNumber(d.value); })
+      .each(stash);
+
+    // Add this to each to each <g> element:
+    // <text transform="[degrees around]" x="[dist from center]" dx="[margin]">[Show this]</text>
+    var text = g.append("text")
+      .attr("transform", function (d) {
+        return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")";
+      })
+      .attr('text-anchor', function (d) {
+        return computeTextRotation(d) > 180 ? "start" : "end"; // vs. "end"
+      })
+      //.attr("x", 300)
+      .attr("dx", function (d) { return computeTextRotation(d) > 180 ? -13 : 13; }) // margin
+      .attr("dy", ".35em") // vertical-align
+      .text(function (d) { return (d.x0 != d.x1) ? d.data.word : ""; }); // don't show root
+
+  }
+  update();
+
+
+  // ********** EVENT RESPONSE **********
   $('input[name=mode]').on("change", function change() {
-    // http://stackoverflow.com/questions/39024805/d3-transition-arcs-in-sunburst-chart
     if ($('input[name=mode]:checked').val() == 'linear') {
       toggle = "linear";
     } else {
       toggle = "grouped";
     }
-
-    root.sum(function (d) { return toggle == "linear" ? d.size : d.grpSize; });
-    g = svg.selectAll("g").data(partition(root).descendants());
-    g.enter().append("g");
+    
 
     //path
-        
+
     //  .transition()
     //    .duration(1500)
     //    .attrTween("d", arcTween);
@@ -136,7 +139,7 @@ $(function () {
       return arc(b);
     };
   }
-  
+
 
   function click(d) {
     text.transition().attr("opacity", 0);
@@ -163,7 +166,7 @@ $(function () {
     var ang = ((x((d.x0 + d.x1) / 2) - Math.PI / 2) / Math.PI * 180);
     return  (ang > 90) ? 180 + ang : ang;
   }
-  
+
   function showQuote(quote) {
     $("#title").text(quote[0])
     $("#quote").text(quote[1].replace(/[g[0-9]*]/g, ""))
@@ -176,14 +179,14 @@ $(function () {
     for (i = 0; i < vsWords.length ; i++) {
 
       //sbWords.filter(function (value) { return value == vsWords[i]; }).length;
-      word = vsWords[i].split("|"); 
-      
+      word = vsWords[i].split("|");
+
       if (word.length == 1) {
 
         sbWords.push({ "name": i, "word": word[0], "parent": rootNode, "size": 1, "grpSize": 0 });
       } else {
 
-        // If this combo of English:Greek word exists, then add a 
+        // If this combo of English:Greek word exists, then add a
         filtered = sbWords.filter(function (value) { return value.word == word[1] && value.eWord == word[0]; });
 
         var newGrpSize = 1;
@@ -191,7 +194,7 @@ $(function () {
           filtered[0].grpSize += 1;
           newGrpSize = 0;
         }
-                    
+
         sbWords.push({ "name": word[1], "parent": i, "word": word[1], "size": 1, "grpSize": newGrpSize, "eWord": word[0] });
         sbWords.push({ "name": i, "word": word[0], "parent": rootNode, "size": 0, "grpSize": 0 });
       }
