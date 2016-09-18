@@ -1,0 +1,9 @@
+I updated Kerry Rodden’s [Zoomable sunburst with updating data](https://bl.ocks.org/kerryrodden/477c1bfb081b783f80ad) to D3 version 4. His work was based on Mike Bostock's [Zoomable Sunburst](http://bl.ocks.org/mbostock/4348373) and [Sunburst Partition](http://bl.ocks.org/mbostock/4063423) examples. He'd overcome some challenging tween issues (nicely done!). I added an opening tween in arcTweenData() that animates the sunburst creation, growing it from 0, and streamlines the tweening process (no longer need to stash() previous x0 and x1 values).
+
+The hierarchical dataset is built the fly.  It starts as a string quote in English, with the original language words in brackets. I dynamically analyze and transform it using regex, jQuery, and [d3-hierarchy](https://github.com/d3/d3-hierarchy/blob/master/README.md). The user can toggle between modes: "Linear" (words in order they appear in English) and "Grouped" (only show directly-translated words, and group them by first appearance). I don't change the dataset on the fly, instead change the source of the slice sizing from d.size to d.grpSize. Each node object has the form: {name: "g1063", size: 1, grpSize: 2, parent: 0, word: "g1063", eWord: "For"}.
+
+The continuous coloration scheme leverages d3.scaleLinear() thanks to Jerome Cukier's excellent post [d3: scales, and color](http://www.jeromecukier.net/blog/2011/08/11/d3-scales-and-color/). The palettes are from Mary Stribley's [Website Color Schemes](https://designschool.canva.com/blog/website-color-schemes/).
+
+Click on any arc to zoom in, and click on the center circle to zoom out. Use the Linear/Grouped radio buttons to update the data.
+
+Found this on github? See it working at [http://bl.ocks.org/denjn5](http://bl.ocks.org/denjn5/1a3f8e44cdcb3054121dfd991f59fbc2).

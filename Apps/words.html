@@ -43,14 +43,14 @@ $(function () {
     //quote = ["Matthew 11:28-30", "Come[g1205] unto[g4314] me[g3165], all[g3956] ye that labour[g2872] and[g2532] are heavy laden[g5412], and I[g2504] will give[g373] you[g5209] rest[g373]. Take[g142] my[g3450] yoke[g2218] upon[g1909] you[g5209], and[g2532] learn[g3129] of[g575] me[g1700]; for[g3754] I am[g1510] meek[g4235] and[g2532] lowly[g5011] in heart[g2588]: and[g2532] ye shall find[g2147] rest[g372] unto your[g5216] souls[g5590]. For[g1063] my[g3450] yoke[g2218] is easy[g5543], and[g2532] my[g3450] burden[g5413] is[g1510][g2076] light[g1645]."],
     mode = $('.mode:checked').val(), // linear or grouped, based on radiobuttons
     svg = d3.select("svg").append("g").attr("transform", "translate(" + gWidth / 2 + "," + (gHeight / 2) + ")"),
-    color_palettes = [['#4abdac', '#fc4a1a', '#f7b733'], ['#f03b20', '#feb24c', '#ffeda0'], ['#ffce00', '#0375b4', '#007849'], ['#373737', '#dcd0c0', '#c0b283'], ['#d7191c', '#ffffbf', '#2b83ba'], ['#e37222', '#07889b', '#eeaa7b']];
+    color_palettes = [['#4abdac', '#fc4a1a', '#f7b733'], ['#f03b20', '#feb24c', '#ffeda0'], ['#007849', '#0375b4', '#ffce00'], ['#373737', '#dcd0c0', '#c0b283'], ['#e37222', '#07889b', '#eeaa7b'], ['#062f4f', '#813772', '#b82601'], ['#565656', '#76323f', '#c09f80']];
 
   // D3 Global Variables
   var root = textToHierarchy(quote[0], quote[1]), 
     node = root, // Save root for tweening
     x = d3.scaleLinear().range([0, 2 * Math.PI]),
     y = d3.scaleSqrt().range([0, radius]),
-    color = d3.scaleLinear().domain([0, 0.5, 1]).range(color_palettes[~~(Math.random() * 5)]),
+    color = d3.scaleLinear().domain([0, 0.5, 1]).range(color_palettes[~~(Math.random() * 6)]),
     partition = d3.partition();
 
   // Calculate the d path for each slice.
@@ -132,7 +132,7 @@ $(function () {
     if (i == 0) { 
       // If we are on the first arc, adjust the x domain to match the root node
       // at the current zoom level. (We only need to do this once.)
-      var xd = d3.interpolate(x.domain(), [node.x0, node.x0 + node.x1]);
+      var xd = d3.interpolate(x.domain(), [node.x0, node.x1]);
       return function (t) {
         x.domain(xd(t));
         return tween(t);
@@ -141,6 +141,42 @@ $(function () {
       return tween;
     }
   }
+
+  // When switching data: interpolate the arcs in data space.
+  function arcTweenDataText(a, i) {
+    var centroid = arc.centroid(d);
+    var angle = ((x((d.x0 + d.x1) / 2) - Math.PI / 2) / Math.PI * 180);
+    angle = (angle > 90) ? 180 + angle : angle;
+    var anchor = (angle > 180) ? "start" : "end";
+    var margin = (angle > 180) ? -13 : 13;
+
+
+    // (a.x0s ? a.x0s : 0) -- grab the prev saved x0 or set to 0 (for 1st time through)
+    // avoids the stash() and allows the sunburst to grow into being
+    var oi = d3.interpolate({ centroid: (d.centroids ? d.centroids : 0), angle: (d.angles ? d.angles : 0), anchor: (d.anchors ? d.anchors : 0), margin: (d.margins ? d.margins : 0) }, a);
+    function tween(t) {
+      var b = oi(t);
+      a.centroids = b.centroid;
+      a.angles = b.angle;
+      a.anchors = b.anchor;
+      a.margins = b.margin;
+      // TODO: return a variable that calcs proper text
+      // <text opacity="1" transform="translate(26.375302002827866,-129.76207090108318)rotate(-78.51063829787233)" text-anchor="end" dx="13" dy=".35em">God</text>
+      return arc(b);
+    }
+    if (i == 0) {
+      // If we are on the first arc, adjust the x domain to match the root node
+      // at the current zoom level. (We only need to do this once.)
+      var xd = d3.interpolate(x.domain(), [node.x0, node.x1]);
+      return function (t) {
+        x.domain(xd(t));
+        return tween(t);
+      };
+    } else {
+      return tween;
+    }
+  }
+
 
 
   // When zooming: interpolate the scales.
@@ -154,6 +190,8 @@ $(function () {
           : function (t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
     };
   }
+
+
 
   function computeTextRotation(d) {
     d.centroid = arc.centroid(d);

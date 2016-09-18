@@ -40,14 +40,14 @@ $(function () {
     quote = ["John 3:16-17", "For[g1063] God[g2316] so[g3779] loved[g25] the world[g2889], that[g5620] he gave[g1325] his[g846] only begotten[g3439] Son[g5207], that[g2443] whosoever[g3956] believeth[g4100] in[g1519] him[g846] should[g622] not[g3361] perish[g622], but[g235] have[g2192] everlasting[g166] life[g2222]. For[g1063] God[g2316] sent[g649] not[g3756] his[g846] Son[g5207] into[g1519] the world[g2889] to[g2443] condemn[g2919] the world[g2889]; but[g235] that[g2443] the world[g2889] through[g1223] him[g846] might be saved[g4982]."],
     mode = $('.mode:checked').val(), // Linear or grouped, based on radio buttons
     svg = d3.select("svg").append("g").attr("transform", "translate(" + gWidth / 2 + "," + (gHeight / 2) + ")"),
-    color_palettes = [['#4abdac', '#fc4a1a', '#f7b733'], ['#f03b20', '#feb24c', '#ffeda0'], ['#ffce00', '#0375b4', '#007849'], ['#373737', '#dcd0c0', '#c0b283'], ['#d7191c', '#ffffbf', '#2b83ba'], ['#e37222', '#07889b', '#eeaa7b']];
+    color_palettes = [['#4abdac', '#fc4a1a', '#f7b733'], ['#f03b20', '#feb24c', '#ffeda0'], ['#007849', '#0375b4', '#ffce00'], ['#373737', '#dcd0c0', '#c0b283'], ['#e37222', '#07889b', '#eeaa7b'], ['#062f4f', '#813772', '#b82601'], ['#565656', '#76323f', '#c09f80']];
 
   // D3 Global Variables
   var root = textToHierarchy(quote[0], quote[1]), 
     node = root, // Save root for tweening
     x = d3.scaleLinear().range([0, 2 * Math.PI]),
     y = d3.scaleSqrt().range([0, radius]),
-    color = d3.scaleLinear().domain([0, 0.5, 1]).range(color_palettes[~~(Math.random() * 5)]),
+    color = d3.scaleLinear().domain([0, 0.5, 1]).range(color_palettes[~~(Math.random() * 6)]), // ~~(Math.random() * 6)
     partition = d3.partition();
 
   // Calculate the d path for each slice.
@@ -115,7 +115,7 @@ $(function () {
     if (i == 0) { 
       // If we are on the first arc, adjust the x domain to match the root node
       // at the current zoom level. (We only need to do this once.)
-      var xd = d3.interpolate(x.domain(), [node.x0, node.x0 + node.x1]);
+      var xd = d3.interpolate(x.domain(), [node.x0, node.x1]);
       return function (t) {
         x.domain(xd(t));
         return tween(t);

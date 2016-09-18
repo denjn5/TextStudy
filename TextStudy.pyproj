@@ -41,6 +41,7 @@
     <Content Include="Apps\words_orig.html" />
     <Content Include="Apps\words.json" />
     <Content Include="Apps\words_readme.md" />
+    <Content Include="Apps\words_textless_readme.md" />
     <Content Include="index.html" />
     <Content Include="Apps\memory.html" />
     <Content Include="Apps\memory_readme.md" />
