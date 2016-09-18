@@ -77,7 +77,8 @@ $(function () {
   // Create the <g> (group) elements that will be populated with color and text
   g = svg.selectAll("g").data(partition(root).descendants()).enter().append("g");
 
-  // Add a <path d="[shape]"><title>[popup text]</title></path> to each <g> element; add event handler
+  // Add a <path d="[shape]" style="fill: [color];"><title>[popup text]</title></path>
+  //   to each <g> element; add event handler
   var path = g.append("path")
     .attr("d", arc).style("fill", function (d) {
       return d.parent ? color(d.x0) : "white";

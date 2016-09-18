@@ -12,8 +12,8 @@ path {
 </style>
 <body>
   <svg id="gameboard"></svg>
-  <label><input type="radio" name="mode" value="linear" checked> Linear</label>
-  <label><input type="radio" name="mode" value="grouped"> Grouped</label>
+  <label><input class="mode" type="radio" name="mode" value="linear" checked> Linear</label>
+  <label><input class="mode" type="radio" name="mode" value="grouped"> Grouped</label>
 </body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
@@ -26,80 +26,117 @@ $(function () {
     gHeight = $('#gameboard').height(),   // Height of the svg palette
     radius = (Math.min(gWidth, gHeight) / 2) - 10,
     quote = ["Rom 3:25", "Whom[g3739] God[g2316] hath set forth[g4388] to be a propitiation[g2435] through[g1223] faith[g4102] in[g1722] his[g846] blood[g129], to[g1519] declare[g1732] his[g846] righteousness[g1343] for[g1223] the remission[g3929] of sins[g265] that are past[g4266], through[g1722] the forbearance[g463] of God[g2316];"],
-    toggle = "grouped", // linear or grouped
+    mode = $('.mode:checked').val(), // linear or grouped, based on radiobuttons
     svg = d3.select("svg").append("g").attr("transform", "translate(" + gWidth / 2 + "," + (gHeight / 2) + ")");
 
 
   // D3 Globals
-  var root = textToHierarchy(quote[0], quote[1]),
+  var root = textToHierarchy(quote[0], quote[1]), 
+    node = root,
     x = d3.scaleLinear().range([0, 2 * Math.PI]),
     y = d3.scaleSqrt().range([0, radius]),
     color = d3.scaleOrdinal(d3.schemeCategory20),
     partition = d3.partition();
 
+  // Calculate the d path for each slice.
   var arc = d3.arc()
     .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x0))); })
     .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x1))); })
     .innerRadius(function(d) { return Math.max(0, y(d.y0)); })
     .outerRadius(function(d) { return Math.max(0, y(d.y1)); });
 
-
+  // Build the sunburst.
   function start() {
-    root.sum(function (d) { return toggle == "linear" ? d.size : d.grpSize; });
-    svg.selectAll("path").data(partition(root).descendants())
+    // Determine how to size the slices.
+    if (mode == "linear") { 
+      root.sum(function (d) { return d.size; });
+    } else {
+      root.sum(function (d) { return d.grpSize; });
+    }
+
+    // Add a <path d="[shape]" style="fill: [color];"><title>[popup text]</title></path>
+    //   to each <g> element; add click handler; save slice widths for tweening
+    svg.selectAll("path").data(partition(root).descendants()) // 
       .enter().append("path")
       .attr("d", arc).style("fill", function(d) { return color((d.children ? d : d.parent).data.name); })
       .on("click", click)
-      .append("title").text(function(d) { return d.data.name + "\n" + d.value; });
+      .append("title").text(function(d) { return d.data.name + "\n" + d.value; })
+      .each(stash);
   }
 
   start();
 
-  function update(order) {
-    if (order === "grouped") {
+
+  function update() {
+    if (mode == "linear") {
       root.sum(function (d) { return d.size; });
-        
     } else {
       root.sum(function (d) { return d.grpSize; });
-        
     }
-    console.log(toggle);
-
 
     svg.selectAll("path").data(partition(root).descendants());
-
-    svg
-      //.tween("scale", function (d) {
-      //  var xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
-      //    yd = d3.interpolate(y.domain(), [d.y0, 1]),
-      //    yr = d3.interpolate(y.range(), [d.y0 ? 20 : 0, radius]);
-      //  return function (t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); };
-      //})
-      .selectAll("path").transition().duration(750)
-      .attrTween("d", function (d) { return function () { return arc(d); }; });
+    svg.selectAll("path").transition().duration(1000)
+      .attrTween("d", arcTweenData);
   }
 
 
-  $('input[name=mode]').on("change", function change() {
-    var order = $('input[name=mode]:checked').val()
-    update(order);
+
+  // Setup for switching data: stash the old values for transition.
+  function stash(d) {
+    d.x0s = d.x0;
+    d.x1s = d.x1;
+  }
+
+
+    
+  // When switching data: interpolate the arcs in data space.
+  function arcTweenData(a, i) {
+    var oi = d3.interpolate({ x0: a.x0s, x1: a.x1s }, a);  //d3.interpolate({ x: a.x0, dx: a.dx0 }, a)
+    function tween(t) {
+      var b = oi(t);
+      a.x0s = b.x0;  // a.x0 = b.x;
+      a.x1s = b.x1;  // a.dx0 = b.dx;
+      return arc(b);
+    }
+    if (i == 0) {
+      // If we are on the first arc, adjust the x domain to match the root node
+      // at the current zoom level. (We only need to do this once.)
+      var xd = d3.interpolate(x.domain(), [node.x0, node.x0 + node.x1]);
+      return function (t) {
+        x.domain(xd(t));
+        return tween(t);
+      };
+    } else {
+      return tween;
+    }
+  }
+
+
+  $('.mode').on("change", function change() {
+    mode = $('.mode:checked').val();
+    update();
   });
 
 
 
-  //setTimeout(function (d) { toggle = "grouped"; start(); click(d); }, 1500);
-
   function click(d) {
-    svg.transition().duration(750).tween("scale", function() {
-      var xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
-        yd = d3.interpolate(y.domain(), [d.y0, 1]),
-        yr = d3.interpolate(y.range(), [d.y0 ? 20 : 0, radius]);
-      return function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); };
-    })
-    .selectAll("path")
-    .attrTween("d", function(d) { return function() { return arc(d); }; });
+    node = d;
+    svg.selectAll("path")
+    //path
+      .transition().duration(1000).attrTween("d", arcTweenZoom(d));
   }
 
+  // When zooming: interpolate the scales.
+  function arcTweenZoom(d) {
+    var xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+        yd = d3.interpolate(y.domain(), [d.y0, 1]), // [d.y0, 1]
+        yr = d3.interpolate(y.range(), [d.y0 ? 50 : 0, radius]);
+    return function (d, i) {
+      return i
+          ? function (t) { return arc(d); }
+          : function (t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+    };
+  }
 
 
   function textToHierarchy(rootNode, quote) {
