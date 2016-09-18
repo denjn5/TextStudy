@@ -23,8 +23,7 @@ text {
 <body>
   <svg id="gameboard"></svg><br />
   <label><input class="mode" type="radio" name="mode" value="linear" checked> Linear</label>
-  <label><input class="mode" type="radio" name="mode" value="grouped"> Grouped</label><br />
-  <lable><input class="showText" type="checkbox" /> Show Text?</lable>
+  <label><input class="mode" type="radio" name="mode" value="grouped"> Grouped</label>
 
 </body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -38,10 +37,8 @@ $(function () {
   var gWidth = $('#gameboard').width(),   // Width of the svg palette
     gHeight = $('#gameboard').height(),   // Height of the svg palette
     radius = (Math.min(gWidth, gHeight) / 2) - 10,
-    //quote = ["Rom 3:25", "Whom[g3739] God[g2316] hath set forth[g4388] to be a propitiation[g2435] through[g1223] faith[g4102] in[g1722] his[g846] blood[g129], to[g1519] declare[g1732] his[g846] righteousness[g1343] for[g1223] the remission[g3929] of sins[g265] that are past[g4266], through[g1722] the forbearance[g463] of God[g2316];"],
     quote = ["John 3:16-17", "For[g1063] God[g2316] so[g3779] loved[g25] the world[g2889], that[g5620] he gave[g1325] his[g846] only begotten[g3439] Son[g5207], that[g2443] whosoever[g3956] believeth[g4100] in[g1519] him[g846] should[g622] not[g3361] perish[g622], but[g235] have[g2192] everlasting[g166] life[g2222]. For[g1063] God[g2316] sent[g649] not[g3756] his[g846] Son[g5207] into[g1519] the world[g2889] to[g2443] condemn[g2919] the world[g2889]; but[g235] that[g2443] the world[g2889] through[g1223] him[g846] might be saved[g4982]."],
-    //quote = ["Matthew 11:28-30", "Come[g1205] unto[g4314] me[g3165], all[g3956] ye that labour[g2872] and[g2532] are heavy laden[g5412], and I[g2504] will give[g373] you[g5209] rest[g373]. Take[g142] my[g3450] yoke[g2218] upon[g1909] you[g5209], and[g2532] learn[g3129] of[g575] me[g1700]; for[g3754] I am[g1510] meek[g4235] and[g2532] lowly[g5011] in heart[g2588]: and[g2532] ye shall find[g2147] rest[g372] unto your[g5216] souls[g5590]. For[g1063] my[g3450] yoke[g2218] is easy[g5543], and[g2532] my[g3450] burden[g5413] is[g1510][g2076] light[g1645]."],
-    mode = $('.mode:checked').val(), // linear or grouped, based on radiobuttons
+    mode = $('.mode:checked').val(), // Linear or grouped, based on radio buttons
     svg = d3.select("svg").append("g").attr("transform", "translate(" + gWidth / 2 + "," + (gHeight / 2) + ")"),
     color_palettes = [['#4abdac', '#fc4a1a', '#f7b733'], ['#f03b20', '#feb24c', '#ffeda0'], ['#ffce00', '#0375b4', '#007849'], ['#373737', '#dcd0c0', '#c0b283'], ['#d7191c', '#ffffbf', '#2b83ba'], ['#e37222', '#07889b', '#eeaa7b']];
 
@@ -73,32 +70,18 @@ $(function () {
     if (first_build) {
       // Add a <path d="[shape]" style="fill: [color];"><title>[popup text]</title></path>
       //   to each <g> element; add click handler; save slice widths for tweening
-      svg.selectAll("g").data(partition(root).descendants()).enter().append("g").each(computeTextRotation);
-      svg.selectAll("g").append("path").style("fill", function (d) { return d.parent ? color(d.x0) : "white"; })  // Return white for root.
+      svg.selectAll("path").data(partition(root).descendants()).enter().append("path")
+        .style("fill", function (d) { return d.parent ? color(d.x0) : "white"; })  // Return white for root.
         .on("click", click);
 
       svg.selectAll("path").append("title").text(function (d) { return d.data.word; })
-
-      svg.selectAll("g").append("text").attr("opacity", 0)
-        .attr("transform", function (d) { return "translate(" + d.centroid + ")rotate(" + d.angle + ")"; })
-        .attr('text-anchor', function (d) { return d.anchor; })
-        .attr("dx", function (d) { return d.margin; }) // margin
-        .attr("dy", ".35em") // vertical-align
-        .text(function (d) { return (d.x0 != d.x1) ? d.data.word : ""; }); // don't show root
-
 
       first_build = false;
     } else {
       svg.selectAll("path").data(partition(root).descendants());
     }
 
-    svg.selectAll("path").transition().duration(1000).attrTween("d", arcTweenData)
-      .call(function () {
-        svg.selectAll("text").transition().duration(1000).attr("opacity", 0)
-          .transition().duration(100).attr("opacity", 1);
-      });
-    
-
+    svg.selectAll("path").transition().duration(1000).attrTween("d", arcTweenData);
   }
 
   update(); // GO!
@@ -153,14 +136,6 @@ $(function () {
           ? function (t) { return arc(d); }
           : function (t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
     };
-  }
-
-  function computeTextRotation(d) {
-    d.centroid = arc.centroid(d);
-    var angle = ((x((d.x0 + d.x1) / 2) - Math.PI / 2) / Math.PI * 180);
-    d.angle = (angle > 90) ? 180 + angle : angle;
-    d.anchor = (angle > 180) ? "start" : "end";
-    d.margin = (angle > 180) ? -13 : 13;
   }
 
 
