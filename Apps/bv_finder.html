@@ -22,7 +22,8 @@ text {
 </style>
 <body>
   <svg id="gameboard"></svg><br />
-  <label><input class="mode" type="radio" name="mode" value="linear" checked> Linear</label>
+  <label><input class="mode" type="radio" name="mode" value="bible" checked> Bible</label>
+  <label><input class="mode" type="radio" name="mode" value="linear"> Linear</label>
   <label><input class="mode" type="radio" name="mode" value="grouped"> Grouped</label><br />
   <lable><input class="showText" type="checkbox" /> Show Text?</lable>
 
@@ -31,8 +32,20 @@ text {
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script>
 $(function () {
-  // helpful: https://bl.ocks.org/kerryrodden/477c1bfb081b783f80ad
-  // palettes: https://designschool.canva.com/blog/website-color-schemes/
+
+  var root, node;
+
+  d3.json("bible_structure.json", function (error, bvsa) {
+    if (error) {
+      return console.error(error);
+    }
+    //var root = d3.stratify().id(function (d) { return d.name; })
+    //  .parentId(function (d) { return d.parent; })(bvs);
+    root = d3.stratify().id(function (d) { return d.name; }).parentId(function (d) { return d.parent; })(bvsa);
+    node = root;
+    update();
+  });
+
 
   // Global Variables
   var gWidth = $('#gameboard').width(),   // Width of the svg palette
@@ -41,15 +54,19 @@ $(function () {
     //quote = ["Rom 3:25", "Whom[g3739] God[g2316] hath set forth[g4388] to be a propitiation[g2435] through[g1223] faith[g4102] in[g1722] his[g846] blood[g129], to[g1519] declare[g1732] his[g846] righteousness[g1343] for[g1223] the remission[g3929] of sins[g265] that are past[g4266], through[g1722] the forbearance[g463] of God[g2316];"],
     quote = ["John 3:16-17", "For[g1063] God[g2316] so[g3779] loved[g25] the world[g2889], that[g5620] he gave[g1325] his[g846] only begotten[g3439] Son[g5207], that[g2443] whosoever[g3956] believeth[g4100] in[g1519] him[g846] should[g622] not[g3361] perish[g622], but[g235] have[g2192] everlasting[g166] life[g2222]. For[g1063] God[g2316] sent[g649] not[g3756] his[g846] Son[g5207] into[g1519] the world[g2889] to[g2443] condemn[g2919] the world[g2889]; but[g235] that[g2443] the world[g2889] through[g1223] him[g846] might be saved[g4982]."],
     //quote = ["Matthew 11:28-30", "Come[g1205] unto[g4314] me[g3165], all[g3956] ye that labour[g2872] and[g2532] are heavy laden[g5412], and I[g2504] will give[g373] you[g5209] rest[g373]. Take[g142] my[g3450] yoke[g2218] upon[g1909] you[g5209], and[g2532] learn[g3129] of[g575] me[g1700]; for[g3754] I am[g1510] meek[g4235] and[g2532] lowly[g5011] in heart[g2588]: and[g2532] ye shall find[g2147] rest[g372] unto your[g5216] souls[g5590]. For[g1063] my[g3450] yoke[g2218] is easy[g5543], and[g2532] my[g3450] burden[g5413] is[g1510][g2076] light[g1645]."],
-    mode = $('.mode:checked').val(), // linear or grouped, based on radiobuttons
+    mode = "bible" // $('.mode:checked').val(), // linear or grouped, based on radiobuttons
     svg = d3.select("svg").append("g").attr("transform", "translate(" + gWidth / 2 + "," + (gHeight / 2) + ")"),
     color_palettes = [['#4abdac', '#fc4a1a', '#f7b733'], ['#f03b20', '#feb24c', '#ffeda0'], ['#007849', '#0375b4', '#ffce00'], ['#373737', '#dcd0c0', '#c0b283'], ['#e37222', '#07889b', '#eeaa7b'], ['#062f4f', '#813772', '#b82601'], ['#565656', '#76323f', '#c09f80']];
 
   // D3 Global Variables
-  var root = textToHierarchy(quote[0], quote[1]), 
-    node = root, // Save root for tweening
+  //root = textToHierarchy(quote[0], quote[1]), // INFO: OLD
+
+
+
+
+  var  // Save root for tweening
     x = d3.scaleLinear().range([0, 2 * Math.PI]),
-    y = d3.scaleSqrt().range([0, radius]),
+    y = d3.scaleLinear().range([0, radius]), //scaleSqrt
     color = d3.scaleLinear().domain([0, 0.5, 1]).range(color_palettes[~~(Math.random() * 6)]),
     partition = d3.partition();
 
@@ -60,11 +77,16 @@ $(function () {
     .innerRadius(function(d) { return Math.max(0, y(d.y0)); })
     .outerRadius(function(d) { return Math.max(0, y(d.y1)); });
 
+
   // Build the sunburst.
   var first_build = true;
   function update() {
     // Determine how to size the slices.
-    if (mode == "linear") { 
+    if (mode == "bible") {
+      root.sum(function (d) {
+        return d.verse_counts ? 1 : 0;
+      });
+    } else if (mode == "linear") {
       root.sum(function (d) { return d.size; });
     } else {
       root.sum(function (d) { return d.grpSize; });
@@ -82,7 +104,7 @@ $(function () {
       svg.selectAll("g").append("text")
         //.attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"; })
         .attr("dy", ".35em") // vertical-align
-        .text(function (d) { return (d.x0 != d.x1) ? d.data.word : ""; }) // don't show root
+        .text(function (d) { return (d.x0 != d.x1) ? d.data.name : ""; }) // don't show root // TODO: was d.data.word
           ; // margin
 
 
@@ -110,14 +132,12 @@ $(function () {
       .attr("opacity", function (d) { return d.x1 - d.x0 > 0.01 ? 1 : 0; } );
   }
 
-  update(); // GO!
-
-    
+   
   // Respond to radio click.
-  $('.mode').on("change", function change() {
-    mode = $('.mode:checked').val();
-    update();
-  });
+  //$('.mode').on("change", function change() {
+  //  mode = $('.mode:checked').val();
+  //  update();
+  //});
   
 
   // Respond to slice click.
@@ -241,5 +261,11 @@ $(function () {
       .parentId(function (d) { return d.parent; })(sbWords);
     return root;
   }
+
+function getBibleStructure() {
+
+}
+
 });
+
 </script>

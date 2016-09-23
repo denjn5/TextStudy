@@ -91,13 +91,8 @@ $(function () {
   // Add this to each to each <g> element:
   // <text transform="[degrees around]" x="[dist from center]" dx="[margin]">[Show this]</text>
   var text = g.append("text")
-    .attr("transform", function (d) {
-      return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")";
-    })
-    .attr('text-anchor', function (d) {
-      return computeTextRotation(d) > 180 ? "start" : "end"; // vs. "end"
-    })
-    //.attr("x", 300)
+    .attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"; })
+    .attr('text-anchor', function (d) { return computeTextRotation(d) > 180 ? "start" : "end"; })
     .attr("dx", function (d) { return computeTextRotation(d) > 180 ? -13 : 13; }) // margin
     .attr("dy", ".35em") // vertical-align
     .text(function (d) { return (d.x0 != d.x1) ? d.data.word : ""; }); // don't show root
