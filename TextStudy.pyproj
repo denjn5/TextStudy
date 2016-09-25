@@ -34,6 +34,7 @@
   <ItemGroup>
     <Content Include="Apps\bible_structure.json" />
     <Content Include="Apps\bible_structure - tiny.json" />
+    <Content Include="Apps\bv_finder_works.html" />
     <Content Include="Apps\colors.js" />
     <Content Include="Apps\full_text.json" />
     <Content Include="Apps\bv_finder.html" />

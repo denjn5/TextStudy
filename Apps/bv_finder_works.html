@@ -1,24 +1,24 @@
 ﻿<!DOCTYPE html>
 <meta charset="utf-8">
 <style>
-  @import url('https://fonts.googleapis.com/css?family=PT+Sans+Narrow');
+@import url('https://fonts.googleapis.com/css?family=PT+Sans+Narrow');
 
-  body {
-    font-family: "PT Sans Narrow", "Arial Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  }
+body {
+  font-family: "PT Sans Narrow", "Arial Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+#gameboard {
+  height: 400px;
+  width: 400px;
+}
 
-  #gameboard {
-    height: 400px;
-    width: 400px;
-  }
+path {
+  stroke: #fff;
+}
 
-  path {
-    stroke: #fff;
-  }
+text { 
+  pointer-events: none;
+}
 
-  text {
-    pointer-events: none;
-  }
 </style>
 <body>
   <svg id="gameboard"></svg><br />
@@ -42,7 +42,7 @@ $(function () {
       node = root;
       update();
     }
-
+      
   });
     //root = textToHierarchy("John 3:16-17", "For[g1063] God[g2316] so[g3779] loved[g25] the world[g2889], that[g5620] he gave[g1325] his[g846] only begotten[g3439] Son[g5207], that[g2443] whosoever[g3956] believeth[g4100] in[g1519] him[g846] should[g622] not[g3361] perish[g622], but[g235] have[g2192] everlasting[g166] life[g2222]. For[g1063] God[g2316] sent[g649] not[g3756] his[g846] Son[g5207] into[g1519] the world[g2889] to[g2443] condemn[g2919] the world[g2889]; but[g235] that[g2443] the world[g2889] through[g1223] him[g846] might be saved[g4982]."), // INFO: OLD
     //root = d3.stratify().id(function (d) { return d.name; }).parentId(function (d) { return d.parent; })(bvs);
@@ -109,9 +109,7 @@ $(function () {
       svg.selectAll("path").data(partition(root).descendants());
     }
 
-    svg.selectAll("path").transition().duration(1000).attrTween("d", function (d, i) {
-      return arcTweenPath(d, i);
-    });
+    svg.selectAll("path").transition().duration(1000).attrTween("d", arcTweenData);
     svg.selectAll("text").attr("opacity", 0)
       .attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"; })
       .attr("opacity", function (d) { return d.x1 - d.x0 < 0.01 ? 0 : 1; })
@@ -122,20 +120,18 @@ $(function () {
       .attr("opacity", function (d) { return d.x1 - d.x0 > 0.01 ? 1 : 0; } );
   }
 
-
+   
   // Respond to radio click.
   $('.mode').on("change", function change() {
     mode = $('.mode:checked').val();
     update();
   });
-
+  
 
   // Respond to slice click.
   function click(d) {
     node = d;
-    svg.selectAll("path").transition().duration(1000).attrTween("d", function (d, i) {
-      return arcTweenPath(d, i);
-    });
+    svg.selectAll("path").transition().duration(1000).attrTween("d", arcTweenZoom(d));
     svg.selectAll("text").transition().duration(1000)
       .attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"; })
       //.attr('text-anchor', function (d) { return computeTextRotation(d) > 180 ? "start" : "end"; })
@@ -146,9 +142,32 @@ $(function () {
   }
 
 
+  // When switching data: interpolate the arcs in data space.
+  function arcTweenData(a, i) {
+    // (a.x0s ? a.x0s : 0) -- grab the prev saved x0 or set to 0 (for 1st time through)
+    // avoids the stash() and allows the sunburst to grow into being
+    var oi = d3.interpolate({ x0: (a.x0s ? a.x0s : 0), x1: (a.x1s ? a.x1s : 0) }, a);  
+    function tween(t) {
+      var b = oi(t);
+      a.x0s = b.x0;  
+      a.x1s = b.x1;  
+      return arc(b);
+    }
+    if (i == 0) { 
+      // If we are on the first arc, adjust the x domain to match the root node
+      // at the current zoom level. (We only need to do this once.)
+      var xd = d3.interpolate(x.domain(), [node.x0, node.x1]);
+      return function (t) {
+        x.domain(xd(t));
+        return tween(t);
+      };
+    } else {
+      return tween;
+    }
+  }
 
   // When switching data: interpolate the arcs in data space.
-  function arcTweenText(a, i) {
+  function arcTweenDataText(a, i) {
     var centroid = arc.centroid(d);
     var angle = ((x((d.x0 + d.x1) / 2) - Math.PI / 2) / Math.PI * 180);
     angle = (angle > 90) ? 180 + angle : angle;
@@ -168,35 +187,19 @@ $(function () {
     }
   }
 
-  // When switching data: interpolate the arcs in data space.
-  function arcTweenPath(a, i) {
-    // (a.x0s ? a.x0s : 0) -- grab the prev saved x0 or set to 0 (for 1st time through)
-    // avoids the stash() and allows the sunburst to grow into being
-    var oi = d3.interpolate({ x0: (a.x0s ? a.x0s : 0), x1: (a.x1s ? a.x1s : 0), y0: (a.y0s ? a.y0s : 0), y1: (a.y1s ? a.y1s : 0) }, a);
-    function tween(t) {
-      var b = oi(t);
-      a.x0s = b.x0;
-      a.x1s = b.x1;
-      a.y0s = b.y0;
-      a.y1s = b.y1;
-      return arc(b);
-    }
-    if (i == 0) {  // If we are on the first arc, adjust the x domain to match the root node at the current zoom level.
-      var xd = d3.interpolate(x.domain(), [node.x0, node.x1]);
-      var yd = d3.interpolate(y.domain(), [node.y0, 1]);
-      var yr = d3.interpolate(y.range(), [node.y0 ? 40 : 0, radius]);
 
-      return function (t) {
-        x.domain(xd(t));
-        y.domain(yd(t)).range(yr(t));
-        return tween(t);
-      };
-    } else {
-      return tween;
-    }
+
+  // When zooming: interpolate the scales.
+  function arcTweenZoom(d) {
+    var xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+        yd = d3.interpolate(y.domain(), [d.y0, 1]), // [d.y0, 1]
+        yr = d3.interpolate(y.range(), [d.y0 ? 40 : 0, radius]);
+    return function (d, i) {
+      return i
+          ? function (t) { return arc(d); }
+          : function (t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+    };
   }
-
-
 
   function computeTextRotation(d) {
     var ang = ((x((d.x0 + d.x1) / 2) - Math.PI / 2) / Math.PI * 180);
@@ -228,7 +231,7 @@ $(function () {
         sbWords.push({ "name": i, "word": word[0], "parent": rootNode, "size": 1, "grpSize": 0 });
       } else {
 
-        // If this combo of English:Greek word exists, then add a
+        // If this combo of English:Greek word exists, then add a 
         filtered = sbWords.filter(function (value) { return value.word == word[1] && value.eWord == word[0]; });
 
         var newGrpSize = 1;
