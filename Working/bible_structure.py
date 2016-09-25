@@ -353,7 +353,7 @@ books = [
     },
     {
         'testament': 'NT',
-        'type': 'Hist (NT)',
+        'type': 'Hist',
         'verse_counts': [26, 47, 26, 37, 42, 15, 60, 40, 43, 48, 30, 25, 52, 28, 41, 40, 34, 28, 41, 38, 40, 30, 35, 27, 27, 32, 44, 31],
         'name': 'Acts',
         'abbreviations': ['Act', 'ac', 'acts'],
@@ -465,7 +465,7 @@ books = [
     },
     {
         'testament': 'NT',
-        'type': 'General',
+        'type': 'Epistle',
         'verse_counts': [14, 18, 19, 16, 14, 20, 28, 13, 28, 39, 40, 29, 25],
         'name': 'Hebrews',
         'abbreviations': ['Heb', 'he'],
@@ -473,7 +473,7 @@ books = [
     },
     {
         'testament': 'NT',
-        'type': 'General',
+        'type': 'Epistle',
         'verse_counts': [27, 26, 18, 17, 20],
         'name': 'James',
         'abbreviations': ['Jam', 'ja', 'jas'],
@@ -481,7 +481,7 @@ books = [
     },
     {
         'testament': 'NT',
-        'type': 'General',
+        'type': 'Epistle',
         'verse_counts': [25, 25, 22, 19, 14],
         'name': '1 Peter',
         'abbreviations': ['1Pe', '1p', '1pe', '1 pe', '1pt', '1pe', '1 pet', '1 pt', '1 pe'],
@@ -489,7 +489,7 @@ books = [
     },
     {
         'testament': 'NT',
-        'type': 'General',
+        'type': 'Epistle',
         'verse_counts': [21, 22, 18],
         'name': '2 Peter',
         'abbreviations': ['2Pe', '2p', '2pe', '2 pe', '2pt', '2pe', '2 pet', '2 pt', '2 pe'],
@@ -497,7 +497,7 @@ books = [
     },
     {
         'testament': 'NT',
-        'type': 'General',
+        'type': 'Epistle',
         'verse_counts': [10, 29, 24, 21, 21],
         'name': '1 John',
         'abbreviations': ['1Jo', '1j', '1jo', '1 jo', '1jn', '1 jn'],
@@ -505,7 +505,7 @@ books = [
     },
     {
         'testament': 'NT',
-        'type': 'General',
+        'type': 'Epistle',
         'verse_counts': [13],
         'name': '2 John',
         'abbreviations': ['2Jo', '2j', '2jo', '2 jo', '2jn', '2 jn'],
@@ -513,7 +513,7 @@ books = [
     },
     {
         'testament': 'NT',
-        'type': 'General',
+        'type': 'Epistle',
         'verse_counts': [14],
         'name': '3 John',
         'abbreviations': ['3Jo', '3j', '3jo', '3 jo', '3jn', '3 jn'],
@@ -521,7 +521,7 @@ books = [
     },
     {
         'testament': 'NT',
-        'type': 'General',
+        'type': 'Epistle',
         'verse_counts': [25],
         'name': 'Jude',
         'abbreviations': ['Jud','ju', 'jude'],
@@ -537,21 +537,18 @@ books = [
     }
 ]
 
-bible_structure = [{"full": "Bible", "parent": "", "name": "Bible"}, {'name': 'OT', 'full': 'Old Testament', 'parent': 'Bible'}, {'name': 'NT', 'full': 'New Testament', 'parent': 'Bible'}]
-testament = 'OT'
-type = ''
+bible_structure = [{'id': 'Bible', 'parent': '', 'name': 'Bible', 'size': 0, 'grpsize': 0}, {'id': 'OT', 'name': 'OT', 'parent': 'Bible', 'size': 0, 'grpsize': 0}, {'id': 'NT', 'name': 'NT', 'parent': 'Bible', 'size': 0, 'grpsize': 0}]
+typeID = ''
 
 for book in books:
-  if book['name'] == 'Matthew':
-    testament = 'NT'
 
   book_name = book['abbreviations'][0]
 
-  if type != book['type']: # only record "type" once for each "type"
-    type = book['type']
-    bible_structure.append({'name': book['type'], 'parent': testament})
+  if typeID != book['testament'] + book['type']: # only record "type" once for each "type"
+    typeID = book['testament'] + book['type']
+    bible_structure.append({'id': typeID, 'name': book['type'], 'parent': book['testament'], 'size': 0, 'grpsize': 0})
     
-  bible_structure.append({'name': book_name, 'full': book['name'], 'parent': book['type'], 'verse_counts': book['verse_counts']})
+  bible_structure.append({'name': book_name, 'parent': typeID, 'verse_counts': book['verse_counts'], 'size': 1, 'grpsize': len(book['verse_counts'])})
 
   # INFO: unremark next 3 lines to get chapters
   #for chapter, verse_count in enumerate(book['verse_counts']): # chapter is really a 0-base 'position in array'
@@ -563,7 +560,7 @@ for book in books:
     #  bible_structure.append({'name': book_name + ' ' + ch_num + ':' + str(v + 1), 'parent': book_name + ' ' + ch_num})
 
 # Save as json
-with open('bible_structure.json', 'w') as outfile:
+with open(r'working\bible_structure.json', 'w') as outfile:
     bible_json = json.dump(bible_structure, outfile)
 
 a = 5

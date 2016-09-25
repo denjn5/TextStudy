@@ -37,6 +37,7 @@
     <Content Include="Apps\colors.js" />
     <Content Include="Apps\full_text.json" />
     <Content Include="Apps\bv_finder.html" />
+    <Content Include="Apps\words_textless_badge.html" />
     <Content Include="Working\hierarchy_maker.js" />
     <Content Include="Working\kjv.json" />
     <Content Include="Apps\words_textless.html" />
