@@ -38,8 +38,7 @@ $(function () {
     if (error) {
       return console.error(error);
     } else {
-      root = d3.stratify().id(function (d) { return d.id; }).parentId(function (d) { return d.parent; })(bvsa);
-      node = root;
+      root = node = d3.stratify().id(function (d) { return d.id; }).parentId(function (d) { return d.parent; })(bvsa);
       update();
     }
 
@@ -84,42 +83,25 @@ $(function () {
       // Add a <path d="[shape]" style="fill: [color];"><title>[popup text]</title></path>
       //   to each <g> element; add click handler; save slice widths for tweening
       svg.selectAll("g").data(partition(root).descendants()).enter().append("g").each(computeTextRotation);
-      svg.selectAll("g").append("path").style("fill", function (d) { return d.parent ? color(d.x0) : "white"; })  // Return white for root.
-        .on("click", click);
-
+      svg.selectAll("g").append("path").style("fill", function (d) { return d.parent ? color(d.x0) : "white"; }).on("click", click);  // Return white for root.
+      svg.selectAll("g").append("text").attr("dy", ".35em").text(function (d) { return d.parent ? d.data.name : ""; }); // TODO: was d.data.word
       svg.selectAll("path").append("title").text(function (d) { return d.data.word; })
-
-      svg.selectAll("g").append("text")
-        //.attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"; })
-        .attr("dy", ".35em") // vertical-align
-        .text(function (d) { return (d.x0 != d.x1) ? d.data.name : ""; }) // don't show root // TODO: was d.data.word
-          ; // margin
-
-
-      //svg.selectAll("g").append("text").attr("opacity", 0)
-      //  .attr("transform", function (d) { return "translate(" + d.centroid + ")rotate(" + d.angle + ")"; })
-      //  //.attr('text-anchor', function (d) { return d.anchor; })
-      //  //.attr("dx", function (d) { return d.margin; }) // margin
-      //  //.attr("dy", ".35em") // vertical-align
-      //  .text(function (d) { return (d.x0 != d.x1) ? d.data.word : ""; }); // don't show root
-
 
       first_build = false;
     } else {
       svg.selectAll("path").data(partition(root).descendants());
     }
 
-    svg.selectAll("path").transition().duration(1000).attrTween("d", function (d, i) {
-      return arcTweenPath(d, i);
-    });
-    svg.selectAll("text").attr("opacity", 0)
-      .attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"; })
-      .attr("opacity", function (d) { return d.x1 - d.x0 < 0.01 ? 0 : 1; })
-      .attr('text-anchor', function (d) { return computeTextRotation(d) > 180 ? "start" : "end"; })
-          .attr("dx", function (d) { return computeTextRotation(d) > 180 ? -13 : 13; });
+    svg.selectAll("path").transition("update").duration(1000).attrTween("d", function (d, i) { return arcTweenPath(d, i); });
+    svg.selectAll("text").transition("update").duration(1000).attrTween("transform", function (d, i) { return arcTweenText(d, i); })
+    //  .attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")"; })
+    //.attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"; })
+    //.attr('text-anchor', function (d) { return computeTextRotation(d) > 180 ? "start" : "end"; })
+    //    .attr("dx", function (d) { return computeTextRotation(d) > 180 ? -13 : 13; })
+    ;
 
-    svg.selectAll("text").transition().duration(1000)
-      .attr("opacity", function (d) { return d.x1 - d.x0 > 0.01 ? 1 : 0; } );
+    //svg.selectAll("text").transition().duration(1000)
+    //  .attr("opacity", function (d) { return d.x1 - d.x0 > 0.01 ? 1 : 0; } );
   }
 
 
@@ -133,39 +115,32 @@ $(function () {
   // Respond to slice click.
   function click(d) {
     node = d;
-    svg.selectAll("path").transition().duration(1000).attrTween("d", function (d, i) {
-      return arcTweenPath(d, i);
-    });
-    svg.selectAll("text").transition().duration(1000)
-      .attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"; })
+    svg.selectAll("path").transition("click").duration(1000).attrTween("d", function (d, i) { return arcTweenPath(d, i); });
+    svg.selectAll("text").transition("click").duration(1000).attrTween("transform", function (d, i) { return arcTweenText(d, i); });
+      //.attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"; })
       //.attr('text-anchor', function (d) { return computeTextRotation(d) > 180 ? "start" : "end"; })
-      //.attr("dx", function (d) { return computeTextRotation(d) > 180 ? -13 : 13; }) // margin
-      //.attr("opacity", function (d) { return d.x1 - d.x0 < 0.01 ? 0 : 1; })
+      //.attr("dx", function (d) { return computeTextRotation(d) > 180 ? -13 : 13; })
+      //.attr("x", function (d) { return y(d.y0); })
     ;
-
   }
 
 
 
   // When switching data: interpolate the arcs in data space.
   function arcTweenText(a, i) {
-    var centroid = arc.centroid(d);
-    var angle = ((x((d.x0 + d.x1) / 2) - Math.PI / 2) / Math.PI * 180);
-    angle = (angle > 90) ? 180 + angle : angle;
-    var anchor = "start"; // (angle > 180) ? "start" : "end";
-    var margin = 0; // (angle > 180) ? -13 : 13;
+    //var centroid = arc.centroid(a);
+    //var angle = ((x((d.x0 + d.x1) / 2) - Math.PI / 2) / Math.PI * 180);
+    //angle = (angle > 90) ? 180 + angle : angle;
+    //var anchor = "start"; // (angle > 180) ? "start" : "end";
+    //var margin = 0; // (angle > 180) ? -13 : 13;
 
-    var oi = d3.interpolate({ centroid: (d.centroids ? d.centroids : 0), angle: (d.angles ? d.angles : 0), anchor: (d.anchors ? d.anchors : 0), margin: (d.margins ? d.margins : 0) }, a);
+    var oi = d3.interpolate({ centroid: (a.centroids ? a.centroids : [0,0]) }, a);
     function tween(t) {
       var b = oi(t);
       a.centroids = b.centroid;
-      a.angles = b.angle;
-      a.anchors = b.anchor;
-      a.margins = b.margin;
-      // TODO: return a variable that calcs proper text
-      // <text transform="translate(26.3,-129.7)rotate(-78.5)" text-anchor="end" dx="13" dy=".35em">God</text>
-      return arc(b);
+      return  "translate(" + arc.centroid(b) + ")";
     }
+    return tween;
   }
 
   // When switching data: interpolate the arcs in data space.
@@ -179,6 +154,7 @@ $(function () {
       a.x1s = b.x1;
       a.y0s = b.y0;
       a.y1s = b.y1;
+      //console.log(a.data.name + " " + b.x0 + " " + b.x1);
       return arc(b);
     }
     if (i == 0) {  // If we are on the first arc, adjust the x domain to match the root node at the current zoom level.
