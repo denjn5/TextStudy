@@ -27,18 +27,18 @@
   <lable><input class="showText" type="checkbox" /> Show Text?</lable>
 
 </body>
-<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3.v4.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script>
 $(function () {
-
+  // Thanks http://bl.ocks.org/metmajer/5480307!!!
   var root, node;
 
   d3.json("bible_structure.json", function (error, bvsa) {
     if (error) {
       return console.error(error);
     } else {
-      root = node = d3.stratify().id(function (d) { return d.id; }).parentId(function (d) { return d.parent; })(bvsa);
+      root = d3.stratify().id(function (d) { return d.id; }).parentId(function (d) { return d.parent; })(bvsa);
       update();
     }
 
@@ -83,7 +83,9 @@ $(function () {
       // Add a <path d="[shape]" style="fill: [color];"><title>[popup text]</title></path>
       //   to each <g> element; add click handler; save slice widths for tweening
       svg.selectAll("g").data(partition(root).descendants()).enter().append("g").each(computeTextRotation);
-      svg.selectAll("g").append("path").style("fill", function (d) { return d.parent ? color(d.x0) : "white"; }).on("click", click);  // Return white for root.
+      svg.selectAll("g").append("path").style("fill", function (d) { return d.parent ? color(d.x0) : "white"; })
+        .on("click", click)
+        .append("title").text(function (d) { return d.data.name; });  // Return white for root.
       svg.selectAll("g").append("text").attr("dy", ".35em").text(function (d) { return d.parent ? d.data.name : ""; }).attr("id", function (d) { return "w" + d.data.name; }); // TODO: was d.data.word
       svg.selectAll("path").append("title").text(function (d) { return d.data.word; })
 
@@ -92,16 +94,12 @@ $(function () {
       svg.selectAll("path").data(partition(root).descendants());
     }
 
+
     svg.selectAll("path").transition("update").duration(1000).attrTween("d", function (d, i) { return arcTweenPath(d, i); });
     svg.selectAll("text").transition("update").duration(1000).attrTween("transform", function (d, i) { return arcTweenText(d, i); })
       .attr('text-anchor', function (d) { return d.textAngle > 180 ? "start" : "end"; })
       .attr("dx", function (d) { return d.textAngle > 180 ? -13 : 13; })
-      .attr("opacity", function (d) {
-        //console.log(d.data.name + " " + (d.x1 - d.x0));
-        //console.log(d.data.name + " " + ((x((d.x0 + d.x1) / 2) - Math.PI / 2) / Math.PI * 180));
-        return d.x1 - d.x0 > 0.01 ? 1 : 0;
-      })
-    ;
+      .attr("opacity", function (e) { return e.x1 - e.x0 > 0.01 ? 1 : 0; });
   }
 
 
@@ -117,13 +115,14 @@ $(function () {
     node = d;
     svg.selectAll("path").transition("click").duration(1000).attrTween("d", function (d, i) { return arcTweenPath(d, i); });
     svg.selectAll("text").transition("click").duration(1000).attrTween("transform", function (d, i) { return arcTweenText(d, i); })
-    .attr('text-anchor', function (d) { return d.textAngle > 180 ? "start" : "end"; })
-    .attr("dx", function (d) { return d.textAngle > 180 ? -13 : 13; })
-    .attr("opacity", function (d) {
-      console.log(d.data.name + " " + d.centroid);
-      return d.x1 > 0.01 ? 1 : 0;
-    })
-    ;
+      .attr('text-anchor', function (d) { return d.textAngle > 180 ? "start" : "end"; })
+      .attr("dx", function (d) { return d.textAngle > 180 ? -13 : 13; })
+      .attr("opacity", function (e) {
+        if (e.x0 >= d.x0 && e.x1 <= d.x1) {
+        return (e.x1 - e.x0 > 0.01 ? 1 : 0);
+      } else {
+        return 0;
+      }})
   }
 
 
@@ -158,7 +157,7 @@ $(function () {
       a.y1s = b.y1;
       return arc(b);
     }
-    if (i == 0) {  // If we are on the first arc, adjust the x domain to match the root node at the current zoom level.
+    if (i == 0 && node) {  // If we are on the first arc, adjust the x domain to match the root node at the current zoom level.
       var xd = d3.interpolate(x.domain(), [node.x0, node.x1]);
       var yd = d3.interpolate(y.domain(), [node.y0, 1]);
       var yr = d3.interpolate(y.range(), [node.y0 ? 40 : 0, radius]);

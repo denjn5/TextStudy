@@ -1,0 +1,128 @@
+[
+  {
+    "name": "NT",
+    "id": "NT",
+    "parent": "",
+    "grpSize": 0,
+    "size": 0
+  },
+  {
+    "name": "Gosp",
+    "id": "NTGosp",
+    "parent": "NT",
+    "grpSize": 0,
+    "size": 0
+  },
+  {
+    "name": "Mat",
+    "grpSize": 28,
+    "parent": "NTGosp",
+    "verse_counts": [ 25, 23, 17, 25, 48, 34, 29, 34, 38, 42, 30, 50, 58, 36, 39, 28, 27, 35, 30, 34, 46, 46, 39, 51, 46, 75, 66, 20 ],
+    "size": 1
+  },
+  {
+    "name": "Mar",
+    "grpSize": 16,
+    "parent": "NTGosp",
+    "verse_counts": [ 45, 28, 35, 41, 43, 56, 37, 38, 50, 52, 33, 44, 37, 72, 47, 20 ],
+    "size": 1
+  },
+  {
+    "name": "Luk",
+    "grpSize": 24,
+    "parent": "NTGosp",
+    "verse_counts": [ 80, 52, 38, 44, 39, 49, 50, 56, 62, 42, 54, 59, 35, 35, 32, 31, 37, 43, 48, 47, 38, 71, 56, 53 ],
+    "size": 1
+  },
+  {
+    "name": "Joh",
+    "grpSize": 21,
+    "parent": "NTGosp",
+    "verse_counts": [ 51, 25, 36, 54, 47, 71, 53, 59, 41, 42, 57, 50, 38, 31, 27, 33, 26, 40, 42, 31, 25 ],
+    "size": 1
+  },
+  {
+    "name": "Hist",
+    "id": "NTHist",
+    "parent": "NT",
+    "grpSize": 0,
+    "size": 0
+  },
+  {
+    "name": "Act",
+    "grpSize": 28,
+    "parent": "NTHist",
+    "verse_counts": [ 26, 47, 26, 37, 42, 15, 60, 40, 43, 48, 30, 25, 52, 28, 41, 40, 34, 28, 41, 38, 40, 30, 35, 27, 27, 32, 44, 31 ],
+    "size": 1
+  },
+  {
+    "name": "Paul",
+    "id": "NTPaul",
+    "parent": "NT",
+    "grpSize": 0,
+    "size": 0
+  },
+  {
+    "name": "Rom",
+    "grpSize": 16,
+    "parent": "NTPaul",
+    "verse_counts": [ 32, 29, 31, 25, 21, 23, 25, 39, 33, 21, 36, 21, 14, 23, 33, 27 ],
+    "size": 1
+  },
+  {
+    "name": "1Co",
+    "grpSize": 16,
+    "parent": "NTPaul",
+    "verse_counts": [ 31, 16, 23, 21, 13, 20, 40, 13, 27, 33, 34, 31, 13, 40, 58, 24 ],
+    "size": 1
+  },
+  {
+    "name": "2Co",
+    "grpSize": 13,
+    "parent": "NTPaul",
+    "verse_counts": [ 24, 17, 18, 18, 21, 18, 16, 24, 15, 18, 33, 21, 14 ],
+    "size": 1
+  },
+  {
+    "name": "Gal",
+    "grpSize": 6,
+    "parent": "NTPaul",
+    "verse_counts": [ 24, 21, 29, 31, 26, 18 ],
+    "size": 1
+  },
+  {
+    "name": "Eph",
+    "grpSize": 6,
+    "parent": "NTPaul",
+    "verse_counts": [ 23, 22, 21, 32, 33, 24 ],
+    "size": 1
+  },
+  {
+    "name": "Phi",
+    "grpSize": 4,
+    "parent": "NTPaul",
+    "verse_counts": [ 30, 30, 21, 23 ],
+    "size": 1
+  },
+  {
+    "name": "Col",
+    "grpSize": 4,
+    "parent": "NTPaul",
+    "verse_counts": [ 29, 23, 25, 18 ],
+    "size": 1
+  },
+  {
+    "name": "1Th",
+    "grpSize": 5,
+    "parent": "NTPaul",
+    "verse_counts": [ 10, 20, 13, 18, 28 ],
+    "size": 1
+  },
+  {
+    "name": "2Th",
+    "grpSize": 3,
+    "parent": "NTPaul",
+    "verse_counts": [ 12, 17, 18 ],
+    "size": 1
+  }
+]
