@@ -24,7 +24,6 @@
   <svg id="gameboard"></svg><br />
   <label><input class="mode" type="radio" name="mode" value="linear" checked> Linear</label>
   <label><input class="mode" type="radio" name="mode" value="grouped"> Grouped</label><br />
-  <lable><input class="showText" type="checkbox" /> Show Text?</lable>
 
 </body>
 <script src="https://d3js.org/d3.v4.js"></script>
@@ -32,13 +31,14 @@
 <script>
 $(function () {
   // Thanks http://bl.ocks.org/metmajer/5480307!!!
-  var root, node;
+  var root, node, tab_structure;
 
   d3.json("bible_structure.json", function (error, bvsa) {
     if (error) {
       return console.error(error);
     } else {
-      root = d3.stratify().id(function (d) { return d.id; }).parentId(function (d) { return d.parent; })(bvsa);
+      tab_structure = bvsa;
+      root = d3.stratify().id(function (d) { return d.idx; }).parentId(function (d) { return d.parent; })(bvsa);
       update();
     }
 
@@ -74,9 +74,13 @@ $(function () {
   function update() {
 
     if (mode == "linear") {      // Determine how to size the slices.
-      root.sum(function (d) { return d.size; });
+      root.sum(function (d) {
+        return d.size;
+      });
     } else {
-      root.sum(function (d) { return d.grpSize; });
+      root.sum(function (d) {
+        return d.grpsize;
+      });
     }
 
     if (first_build) {
@@ -86,7 +90,7 @@ $(function () {
       svg.selectAll("g").append("path").style("fill", function (d) { return d.parent ? color(d.x0) : "white"; })
         .on("click", click)
         .append("title").text(function (d) { return d.data.name; });  // Return white for root.
-      svg.selectAll("g").append("text").attr("dy", ".35em").text(function (d) { return d.parent ? d.data.name : ""; }).attr("id", function (d) { return "w" + d.data.name; }); // TODO: was d.data.word
+      svg.selectAll("g").append("text").attr("dy", ".35em").text(function (d) { return d.parent ? d.data.name : ""; }).attr("idx", function (d) { return "w" + d.data.name; }); // TODO: was d.data.word
       svg.selectAll("path").append("title").text(function (d) { return d.data.word; })
 
       first_build = false;
@@ -112,18 +116,35 @@ $(function () {
 
   // Respond to slice click.
   function click(d) {
+    var book_flag = false;
+    try {
+      if (d.parent.parent.parent.data.name == "Bible") {
+        book_flag = true;
+
+        addChapersVerses(d)
+
+      } 
+    } catch (e) {
+      //book_flag = false; 
+    }
+    
     node = d;
+
     svg.selectAll("path").transition("click").duration(1000).attrTween("d", function (d, i) { return arcTweenPath(d, i); });
     svg.selectAll("text").transition("click").duration(1000).attrTween("transform", function (d, i) { return arcTweenText(d, i); })
       .attr('text-anchor', function (d) { return d.textAngle > 180 ? "start" : "end"; })
       .attr("dx", function (d) { return d.textAngle > 180 ? -13 : 13; })
       .attr("opacity", function (e) {
         if (e.x0 >= d.x0 && e.x1 <= d.x1) {
-        return (e.x1 - e.x0 > 0.01 ? 1 : 0);
-      } else {
-        return 0;
-      }})
-  }
+          return (e.x1 - e.x0 > 0.01 ? 1 : 0);
+        } else {
+          return 0;
+        }
+      })
+
+    
+
+   }
 
 
 
@@ -189,6 +210,23 @@ $(function () {
   //}
 
 
+  // Add chapter & verse marks to the sunburst
+  function addChapersVerses(d) {
+    var vsCounts = d.data.verse_counts;
+    var idx = d.data.idx;
+    var parentIdx = d.parent.data.idx;
+
+    for (i = 0; i < vsCounts.length ; i++) {
+      var chap = i + 1; 
+      tab_structure.push({ "name": chap, "idx": idx + chap, "parent": parentIdx, "grpSize": 0, "size": 0 });
+
+      for (v = 0; v < vsCounts[i]; v++) {
+        var vrs = v + 1; 
+        tab_structure.push({ "name": vrs, "idx": idx + chap + "_" + vrs, "parent": idx + chap, "grpSize": 0, "size": 1 });
+      }
+    }
+  }
+
   // Take text from Strong's and format as hierarchy with root.
   function textToHierarchy(rootNode, quote) {
     var vsWords = quote.replace(/[^A-Za-z0-9 /[]/g, "").replace(/[/[]/g, "|").split(" ");
@@ -222,10 +260,6 @@ $(function () {
       .parentId(function (d) { return d.parent; })(sbWords);
     return root;
   }
-
-function getBibleStructure() {
-
-}
 
 });
 

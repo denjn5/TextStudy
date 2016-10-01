@@ -537,7 +537,7 @@ books = [
     }
 ]
 
-bible_structure = [{'id': 'Bible', 'parent': '', 'name': 'Bible', 'size': 0, 'grpsize': 0}, {'id': 'OT', 'name': 'OT', 'parent': 'Bible', 'size': 0, 'grpsize': 0}, {'id': 'NT', 'name': 'NT', 'parent': 'Bible', 'size': 0, 'grpsize': 0}]
+bible_structure = [{'idx': 'Bible', 'parent': '', 'name': 'Bible', 'size': 0, 'grpsize': 0}, {'idx': 'OT', 'name': 'OT', 'parent': 'Bible', 'size': 0, 'grpsize': 0}, {'idx': 'NT', 'name': 'NT', 'parent': 'Bible', 'size': 0, 'grpsize': 0}]
 typeID = ''
 
 for book in books:
@@ -546,9 +546,9 @@ for book in books:
 
   if typeID != book['testament'] + book['type']: # only record "type" once for each "type"
     typeID = book['testament'] + book['type']
-    bible_structure.append({'id': typeID, 'name': book['type'], 'parent': book['testament'], 'size': 0, 'grpsize': 0})
+    bible_structure.append({'idx': typeID, 'name': book['type'], 'parent': book['testament'], 'size': 0, 'grpsize': 0})
     
-  bible_structure.append({'name': book_name, 'parent': typeID, 'verse_counts': book['verse_counts'], 'size': 1, 'grpsize': len(book['verse_counts'])})
+  bible_structure.append({'idx': 'book_' + book_name, 'name': book_name, 'parent': typeID, 'verse_counts': book['verse_counts'], 'size': 1, 'grpsize': len(book['verse_counts'])})
 
   # INFO: unremark next 3 lines to get chapters
   #for chapter, verse_count in enumerate(book['verse_counts']): # chapter is really a 0-base 'position in array'
